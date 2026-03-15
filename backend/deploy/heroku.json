@@ -1,0 +1,61 @@
+{
+  "name": "sored-backend",
+  "description": "SORED Backend - Sistema de Orçamento Rápido Industrial",
+  "scripts": {
+    "heroku-postbuild": "npm run build",
+    "start": "node dist/index.js",
+    "heroku-prebuild": "npm install && npm run validate-mercadopago"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3001",
+    "MONGODB_URI": {
+      "description": "MongoDB URI com SSL",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "Chave secreta para JWT",
+      "required": true,
+      "generator": "secret"
+    },
+    "BASE_URL": {
+      "description": "URL base da aplicação",
+      "required": true,
+      "value": "https://your-app-name.herokuapp.com"
+    },
+    "ALLOWED_ORIGINS": {
+      "description": "Origens permitidas para CORS",
+      "required": true,
+      "value": "https://your-app-name.herokuapp.com"
+    },
+    "MERCADO_PAGO_ACCESS_TOKEN": {
+      "description": "Token de acesso do Mercado Pago (produção)",
+      "required": true
+    },
+    "MERCADO_PAGO_PUBLIC_KEY": {
+      "description": "Chave pública do Mercado Pago",
+      "required": true
+    },
+    "MERCADO_PAGO_WEBHOOK_SECRET": {
+      "description": "Segredo do webhook (opcional)",
+      "required": false
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev",
+      "as": "DATABASE"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  }
+}

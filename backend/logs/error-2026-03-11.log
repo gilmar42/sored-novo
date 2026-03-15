@@ -1,0 +1,4 @@
+{"error":"Cannot read properties of undefined (reading 'id')","level":"\u001b[31merror\u001b[39m","message":"\u001b[31mErro ao criar pagamento PIX\u001b[39m","timestamp":"2026-03-11 21:58:07:587"}
+{"error":"Cannot read properties of undefined (reading 'id')","level":"\u001b[31merror\u001b[39m","message":"\u001b[31mErro ao criar pagamento PIX\u001b[39m","timestamp":"2026-03-11 22:38:11:3811"}
+{"error":"notificaction_url attribute must be url valid","level":"\u001b[31merror\u001b[39m","message":"\u001b[31mErro ao criar pagamento PIX\u001b[39m","orderId":"plan_monthly_1773282221997","timestamp":"2026-03-11 23:23:42:2342"}
+{"error":"notificaction_url attribute must be url valid","level":"\u001b[31merror\u001b[39m","message":"\u001b[31mErro ao criar pagamento PIX\u001b[39m","timestamp":"2026-03-11 23:23:42:2342"}

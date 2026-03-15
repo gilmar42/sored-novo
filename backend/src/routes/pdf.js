@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const pdfController_1 = require("../controllers/pdfController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.get('/generate/:id', auth_1.authenticate, (0, auth_1.authorize)(['budgets:read']), pdfController_1.generateBudgetPDFController);
+router.post('/budgets/:id/generate', auth_1.authenticate, (0, auth_1.authorize)(['budgets:read']), pdfController_1.generateBudgetPDFController);
+router.get('/budgets/:id/download', auth_1.authenticate, (0, auth_1.authorize)(['budgets:read']), pdfController_1.downloadBudgetPDF);
+router.get('/download/:filename', auth_1.authenticate, pdfController_1.servePDF);
+exports.default = router;

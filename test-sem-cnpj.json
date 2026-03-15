@@ -1,0 +1,7 @@
+{
+  "tenantName": "Empresa Teste Sem CNPJ",
+  "tenantEmail": "teste@empresa.com",
+  "userName": "Test User",
+  "userEmail": "teste@user.com",
+  "userPassword": "123456"
+}
