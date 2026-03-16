@@ -6,6 +6,7 @@ import { CreditCard, QrCode, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import api from '@/lib/api';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
+import CustomCheckout from './CustomCheckout';
 
 interface PaymentData {
   email: string;
@@ -42,6 +43,7 @@ export default function PaymentProcessor({
   onPaymentResultChange
 }: PaymentProcessorProps) {
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix'>('credit_card');
+  const [useCustomCheckout, setUseCustomCheckout] = useState(true); // Forçar checkout personalizado
   const [paymentData, setPaymentData] = useState<PaymentData>(initialPayerData || {
     email: '',
     firstName: '',
@@ -212,6 +214,18 @@ export default function PaymentProcessor({
     }
   };
 
+  // Se for cartão de crédito e usar checkout personalizado
+  if (paymentMethod === 'credit_card' && useCustomCheckout) {
+    return (
+      <CustomCheckout
+        plan={plan}
+        onSuccess={onSuccess}
+        onError={onError}
+        onCancel={onCancel}
+      />
+    );
+  }
+
   // Renderização do pagamento PIX
   if (paymentResult && paymentResult.type === 'pix') {
     return (
@@ -232,7 +246,7 @@ export default function PaymentProcessor({
               <img 
                 src={`data:image/png;base64,${paymentResult.qrCode}`}
                 alt="QR Code PIX"
-                className="w-48 h-48 bg-white p-2 rounded"
+                className="w-48 h-48 bg-slate-800 p-2 rounded-lg"
               />
             )}
           </div>
@@ -317,7 +331,7 @@ export default function PaymentProcessor({
           </div>
           <h3 className="text-xl font-bold mb-2">Pagamento com Cartão de Crédito</h3>
           <p className="text-muted-foreground">
-            Complete o pagamento no checkout seguro do Mercado Pago
+            Pagamento único e seguro processado pelo Mercado Pago
           </p>
         </div>
 
@@ -334,6 +348,10 @@ export default function PaymentProcessor({
                 <span className="font-semibold">{formatPrice(plan.price)}</span>
               </div>
               <div className="flex justify-between">
+                <span>Tipo:</span>
+                <span className="font-semibold">Pagamento Único</span>
+              </div>
+              <div className="flex justify-between">
                 <span>Período:</span>
                 <span className="font-semibold">{plan.period}</span>
               </div>
@@ -345,7 +363,7 @@ export default function PaymentProcessor({
               <p className="font-bold mb-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" /> AMBIENTE DE TESTES (SANDBOX)
               </p>
-              <p>Utilize apenas cartões de teste do Mercado Pago. Cartões reais serão recusados.</p>
+              <p>Utilize apenas cartões de teste do Mercado Pago. Pagamento é único e sem parcelas.</p>
               <a 
                 href="https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/additional-content/test-cards" 
                 target="_blank" 
@@ -367,7 +385,7 @@ export default function PaymentProcessor({
               className="w-full"
             >
               <CreditCard className="w-4 h-4 mr-2" />
-              Pagar no Mercado Pago
+              Pagar à Vista
             </Button>
             
             <div className="grid grid-cols-2 gap-2">
@@ -386,7 +404,7 @@ export default function PaymentProcessor({
             </div>
             
             <p className="text-[10px] text-center text-muted-foreground mt-2">
-              Ao clicar em pagar, uma nova janela abrirá. Após concluir o pagamento, volte aqui para ver a confirmação.
+              Ao clicar em pagar, uma nova janela abrirá com o pagamento único. Após concluir, volte aqui para ver a confirmação.
             </p>
           </div>
         </div>
@@ -425,6 +443,20 @@ export default function PaymentProcessor({
             PIX
           </Button>
         </div>
+        
+        {paymentMethod === 'credit_card' && (
+          <div className="mt-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={useCustomCheckout}
+                onChange={(e) => setUseCustomCheckout(e.target.checked)}
+                className="rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500"
+              />
+              <span>Usar checkout personalizado (sem cupons, pagamento único)</span>
+            </label>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 mb-6">
@@ -503,7 +535,7 @@ export default function PaymentProcessor({
               {paymentMethod === 'credit_card' ? (
                 <>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Pagar com Cartão
+                  Pagar à Vista
                 </>
               ) : (
                 <>

@@ -3,6 +3,7 @@ import './globals.css'
 import { cn } from '@/utils/cn'
 import Sidebar from '@/components/Sidebar'
 import DashboardProvider from '@/components/DashboardProvider'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,11 +22,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" className={cn('h-full', inter.variable)} suppressHydrationWarning>
+    <html lang="pt-BR" className={cn('h-full dark', inter.variable)} suppressHydrationWarning>
       <body className={`${inter.className} h-full font-sans`}>
-        <DashboardProvider>
-          {children}
-        </DashboardProvider>
+        <ThemeProvider>
+          <DashboardProvider>
+            {children}
+          </DashboardProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

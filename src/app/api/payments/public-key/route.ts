@@ -1,16 +1,28 @@
 import { NextResponse } from 'next/server';
-import mercadoPagoClient from '@/lib/mercadoPago';
 
 export async function GET() {
   try {
-    if (!mercadoPagoClient.isConfigured()) {
-      return NextResponse.json({ error: 'Mercado Pago não configurado' }, { status: 503 });
+    const backendUrl = 'http://localhost:3001';
+    
+    const response = await fetch(`${backendUrl}/api/payments/public-key`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Backend responded with status: ${response.status}`);
     }
 
-    const publicKey = mercadoPagoClient.getPublicKey();
-    return NextResponse.json({ publicKey });
-  } catch (error: any) {
-    console.error('Erro ao obter chave pública:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    const data = await response.json();
+    
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error proxying to backend:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch public key' },
+      { status: 500 }
+    );
   }
 }
