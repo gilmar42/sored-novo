@@ -9,8 +9,16 @@
   ],
   "routes": [
     {
+      "src": "/api/payments/(.*)",
+      "dest": "https://api.sored-industrial.com/api/payments/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "https://api.sored-industrial.com/api/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/$1"
     }
   ],
   "env": {
@@ -49,6 +57,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/payments/(.*)",
+      "destination": "https://api.sored-industrial.com/api/payments/$1"
+    },
     {
       "source": "/api/(.*)",
       "destination": "https://api.sored-industrial.com/api/$1"
