@@ -23,7 +23,7 @@ export const validatePixRequest = (req: Request, res: Response, next: NextFuncti
 export const validatePixPayment = [
   // Validação dos campos obrigatórios para pagamento PIX
   (req: Request, res: Response, next: NextFunction) => {
-    const { orderId, amount, description, payerEmail, payerFirstName, payerLastName, payerPhone } = req.body;
+    const { orderId, amount, description, payerEmail, payerFirstName, payerLastName, payerPhone, payerCpf } = req.body;
 
     const errors = [];
 
@@ -59,6 +59,16 @@ export const validatePixPayment = [
 
     if (!payerLastName || typeof payerLastName !== 'string' || payerLastName.trim().length === 0) {
       errors.push({ field: 'payerLastName', message: 'Sobrenome do pagador é obrigatório' });
+    }
+
+    // Validação do CPF do pagador (Obrigatório para PIX)
+    if (!payerCpf || typeof payerCpf !== 'string') {
+      errors.push({ field: 'payerCpf', message: 'CPF do pagador é obrigatório para PIX' });
+    } else {
+      const cleanCpf = payerCpf.replace(/\D/g, '');
+      if (cleanCpf.length !== 11) {
+        errors.push({ field: 'payerCpf', message: 'CPF deve ter 11 dígitos' });
+      }
     }
 
     // Validação do telefone do pagador

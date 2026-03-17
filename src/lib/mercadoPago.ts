@@ -1,17 +1,19 @@
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 
 class MercadoPagoClient {
   private publicKey: string = '';
+  private accessToken: string = '';
   private client: MercadoPagoConfig | null = null;
 
   constructor() {
+    this.accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
     this.publicKey = process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY || '';
 
-    if (this.publicKey) {
-      this.client = new MercadoPagoConfig({ accessToken: this.publicKey });
-      console.log('Mercado Pago frontend configurado com sucesso');
+    if (this.accessToken) {
+      this.client = new MercadoPagoConfig({ accessToken: this.accessToken });
+      console.log('Mercado Pago backend configurado com sucesso');
     } else {
-      console.warn('NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY não configurado - Mercado Pago desativado');
+      console.warn('MERCADO_PAGO_ACCESS_TOKEN não configurado - Mercado Pago desativado');
     }
   }
 
@@ -31,12 +33,22 @@ class MercadoPagoClient {
     throw new Error('createPreference deve ser chamado via API do backend');
   }
 
+  async getPayment(paymentId: string) {
+    if (!this.client) {
+      throw new Error('Mercado Pago não configurado');
+    }
+
+    const payment = new Payment(this.client);
+    const response = await payment.get({ id: paymentId });
+    return response;
+  }
+
   getPublicKey(): string {
     return this.publicKey;
   }
 
   isConfigured(): boolean {
-    return !!this.publicKey;
+    return !!this.client;
   }
 }
 

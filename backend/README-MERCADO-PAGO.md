@@ -41,9 +41,17 @@ MERCADO_PAGO_WEBHOOK_SECRET=SEU_WEBHOOK_SECRET_AQUI
 # URL base da aplicação
 BASE_URL=https://seu-dominio.com
 
+# URL pública do frontend
+FRONTEND_URL=https://app.seu-dominio.com
+
+# Endpoint API do frontend (opcional)
+# Deixe `NEXT_PUBLIC_API_URL` vazio para usar as rotas internas (`/api/`) do Next.js.
+# Defina um valor completo apenas se o frontend tiver que bater diretamente no backend externo.
+NEXT_PUBLIC_API_URL=
+
 # Origens permitidas para CORS
 ALLOWED_ORIGINS=https://seu-dominio.com,https://www.seu-dominio.com
-```
+``` 
 
 ### Configuração de Desenvolvimento
 
@@ -65,6 +73,17 @@ npm run validate-mercadopago
 ```bash
 npm run setup-deploy
 ```
+
+## ✅ Checklist antes do deploy
+
+1. Copie `.env.production.example` para o arquivo de configuração final (não comite segredos). Garanta que `BASE_URL`, `FRONTEND_URL`, `ALLOWED_ORIGINS` e as credenciais `MERCADO_PAGO_*` estejam apontando para os domínios e tokens reais da produção. (`ALLOWED_ORIGINS` precisa listar todas as origens que acessarão o backend, inclusive o `FRONTEND_URL`.)
+2. Rode `npm run validate-mercadopago` para confirmar que todas as variáveis obrigatórias estão configuradas e que o `BASE_URL` usa HTTPS em produção.
+3. Implante o backend com essas variáveis e verifique no dashboard do Mercado Pago que o webhook “https://<BASE_URL>/api/webhooks/mercadopago” está cadastrado com o mesmo `MERCADO_PAGO_WEBHOOK_SECRET`.
+4. Faça um pagamento real (ou com sandbox completo, se ainda estiver preparando o ambiente) via `POST /api/payments/checkout` ou `POST /api/payments/pix/create`. Confirme que:
+   - O checkout retorna `preferenceId` e `init_point` válidos.
+   - O webhook aparece nos logs e atualiza o status do pagamento/assinatura.
+   - Os arquivos de log (`backend/logs/http-*.log`, `backend/logs/all-*.log`) mostram os eventos esperados e não exibem erros de CORS.
+5. Monitore os logs e o endpoint `/api/health` durante as primeiras horas para validar estabilidade e CORS (especialmente `ALLOWED_ORIGINS`/`FRONTEND_URL`).
 
 ## 🌐 Plataformas Suportadas
 

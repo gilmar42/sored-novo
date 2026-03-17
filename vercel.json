@@ -5,16 +5,16 @@
     {
       "src": "package.json",
       "use": "@vercel/next"
+    },
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/payments/(.*)",
-      "dest": "https://api.sored-industrial.com/api/payments/$1"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "https://api.sored-industrial.com/api/$1"
+      "dest": "/api/index.ts"
     },
     {
       "src": "/(.*)",
@@ -22,19 +22,15 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://api.sored-industrial.com/api",
+    "NEXT_PUBLIC_API_URL": "/api",
     "NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY": "@mercadopago-public-key",
     "NEXT_PUBLIC_APP_NAME": "SORED - Sistema de Orçamento Industrial",
     "NEXT_PUBLIC_APP_URL": "https://sored-industrial.vercel.app"
   },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "https://api.sored-industrial.com/api"
-    }
-  },
   "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
+    "api/index.ts": {
+      "maxDuration": 60,
+      "memory": 1024
     }
   },
   "headers": [
@@ -54,16 +50,6 @@
           "value": "Content-Type, Authorization"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/payments/(.*)",
-      "destination": "https://api.sored-industrial.com/api/payments/$1"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "https://api.sored-industrial.com/api/$1"
     }
   ]
 }

@@ -13,6 +13,7 @@ interface PaymentData {
   firstName: string;
   lastName: string;
   phone: string;
+  cpf: string;
 }
 
 interface PaymentProcessorProps {
@@ -43,12 +44,13 @@ export default function PaymentProcessor({
   onPaymentResultChange
 }: PaymentProcessorProps) {
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix'>('credit_card');
-  const [useCustomCheckout, setUseCustomCheckout] = useState(true); // Forçar checkout personalizado
+  const [useCustomCheckout, setUseCustomCheckout] = useState(false); // Checkout personalizado por padrão desativado para permitir escolha de PIX
   const [paymentData, setPaymentData] = useState<PaymentData>(initialPayerData || {
     email: '',
     firstName: '',
     lastName: '',
-    phone: ''
+    phone: '',
+    cpf: ''
   });
   const [loading, setLoading] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(initialPaymentResult || null);
@@ -79,6 +81,7 @@ export default function PaymentProcessor({
     if (!paymentData.firstName) errors.push('Nome é obrigatório');
     if (!paymentData.lastName) errors.push('Sobrenome é obrigatório');
     if (!paymentData.phone) errors.push('Telefone é obrigatório');
+    if (!paymentData.cpf) errors.push('CPF é obrigatório');
 
     if (paymentData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paymentData.email)) {
       errors.push('Email inválido');
@@ -86,6 +89,10 @@ export default function PaymentProcessor({
 
     if (paymentData.phone && !/^(\d{10,11})$/.test(paymentData.phone.replace(/\D/g, ''))) {
       errors.push('Telefone deve ter 10 ou 11 dígitos');
+    }
+
+    if (paymentData.cpf && paymentData.cpf.replace(/\D/g, '').length !== 11) {
+      errors.push('CPF deve ter 11 dígitos');
     }
 
     if (errors.length > 0) {
@@ -143,7 +150,8 @@ export default function PaymentProcessor({
           payerEmail: paymentData.email,
           payerFirstName: paymentData.firstName,
           payerLastName: paymentData.lastName,
-          payerPhone: paymentData.phone
+          payerPhone: paymentData.phone,
+          payerCpf: paymentData.cpf
         }
       });
       
@@ -191,7 +199,8 @@ export default function PaymentProcessor({
           payerEmail: paymentData.email,
           payerFirstName: paymentData.firstName,
           payerLastName: paymentData.lastName,
-          payerPhone: paymentData.phone
+          payerPhone: paymentData.phone,
+          payerCpf: paymentData.cpf
         }
       });
       
@@ -213,18 +222,6 @@ export default function PaymentProcessor({
       setLoading(false);
     }
   };
-
-  // Se for cartão de crédito e usar checkout personalizado
-  if (paymentMethod === 'credit_card' && useCustomCheckout) {
-    return (
-      <CustomCheckout
-        plan={plan}
-        onSuccess={onSuccess}
-        onError={onError}
-        onCancel={onCancel}
-      />
-    );
-  }
 
   // Renderização do pagamento PIX
   if (paymentResult && paymentResult.type === 'pix') {
@@ -459,114 +456,137 @@ export default function PaymentProcessor({
         )}
       </div>
 
-      <div className="space-y-4 mb-6">
-        <label className="block text-sm font-medium mb-2">Dados do Pagador</label>
-        <div className="space-y-4">
+      {paymentMethod === 'credit_card' && useCustomCheckout ? (
+        <CustomCheckout
+          plan={plan}
+          onSuccess={onSuccess}
+          onError={onError}
+          onCancel={onCancel}
+        />
+      ) : (
+        <>
+          <div className="space-y-4 mb-6">
+            <label className="block text-sm font-medium mb-2">Dados do Pagador</label>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={paymentData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Seu e-mail"
+                />
+          </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-sm font-medium mb-1">CPF (Obrigatório)</label>
             <input
-              type="email"
-              name="email"
-              value={paymentData.email}
+              type="text"
+              name="cpf"
+              value={paymentData.cpf}
               onChange={handleInputChange}
               className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Seu e-mail"
+              placeholder="000.000.000-00"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Primeiro nome</label>
-              <input
-                type="text"
-                name="firstName"
-                value={paymentData.firstName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Seu primeiro nome"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Sobrenome</label>
-              <input
-                type="text"
-                name="lastName"
-                value={paymentData.lastName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Seu sobrenome"
-              />
+                <div>
+                  <label className="block text-sm font-medium mb-1">Primeiro nome</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={paymentData.firstName}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Seu primeiro nome"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Sobrenome</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={paymentData.lastName}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Seu sobrenome"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Telefone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={paymentData.phone}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
+                />
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Telefone</label>
-            <input
-              type="tel"
-              name="phone"
-              value={paymentData.phone}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="(00) 00000-0000"
-              maxLength={15}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Button
-          onClick={paymentMethod === 'credit_card' ? processCreditCardPayment : processPixPayment}
-          disabled={loading || !isReady}
-          className="w-full"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processando Pagamento...
-            </>
-          ) : !isReady ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Carregando Mercado Pago...
-            </>
-          ) : (
-            <>
-              {paymentMethod === 'credit_card' ? (
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={paymentMethod === 'credit_card' ? processCreditCardPayment : processPixPayment}
+              disabled={loading || !isReady}
+              className="w-full"
+            >
+              {loading ? (
                 <>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Pagar à Vista
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processando Pagamento...
+                </>
+              ) : !isReady ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Carregando Mercado Pago...
                 </>
               ) : (
                 <>
-                  <QrCode className="w-4 h-4 mr-2" />
-                  Gerar PIX
+                  {paymentMethod === 'credit_card' ? (
+                    <>
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Pagar à Vista
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="w-4 h-4 mr-2" />
+                      Gerar PIX
+                    </>
+                  )}
                 </>
               )}
-            </>
-          )}
-        </Button>
+            </Button>
 
-        {!isReady && !loading && (
-          <p className="text-center text-[10px] text-yellow-500 mt-2">
-            O sistema de pagamentos está demorando. 
-            <button 
-              onClick={() => window.location.reload()} 
-              className="ml-1 underline hover:text-yellow-400"
+            {!isReady && !loading && (
+              <p className="text-center text-[10px] text-yellow-500 mt-2">
+                O sistema de pagamentos está demorando. 
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="ml-1 underline hover:text-yellow-400"
+                >
+                  Recarregar página
+                </button>
+              </p>
+            )}
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              disabled={loading}
+              className="w-full"
             >
-              Recarregar página
-            </button>
-          </p>
-        )}
-        <Button
-          onClick={onCancel}
-          variant="outline"
-          disabled={loading}
-          className="w-full"
-        >
-          Cancelar
-        </Button>
-      </div>
+              Cancelar
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

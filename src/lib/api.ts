@@ -95,7 +95,7 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+
 
 // Interceptor para tratar erros globais (ex: 401 Unauthorized)
 api.interceptors.response.use(

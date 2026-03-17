@@ -7,9 +7,14 @@ export async function GET(
   try {
     const { paymentId } = await params;
     // URL do backend - usa ambiente ou fallback para localhost
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     
-    console.log(`[PIX QR Code Proxy] Forwarding to: ${backendUrl}/api/payments/pix/qrcode/${paymentId}`);
+    // Remover /api do final se estiver presente, pois o proxy já adiciona
+    if (backendUrl.endsWith('/api')) {
+      backendUrl = backendUrl.replace(/\/api$/, '');
+    }
+    
+    console.log(`[PIX QR Proxy] Forwarding to: ${backendUrl}/api/payments/pix/qrcode/${paymentId}`);
     
     const response = await fetch(`${backendUrl}/api/payments/pix/qrcode/${paymentId}`, {
       method: 'GET',

@@ -61,7 +61,8 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       payerEmail,
       payerFirstName,
       payerLastName,
-      payerPhone
+      payerPhone,
+      payerCpf
     } = req.body;
     let { returnUrl } = req.body;
     const userId = (req as any).user?.id || null;
@@ -89,7 +90,8 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
         email: payerEmail,
         firstName: payerFirstName,
         lastName: payerLastName,
-        phone: payerPhone
+        phone: payerPhone,
+        cpf: payerCpf
       } : undefined
     });
 
@@ -130,7 +132,8 @@ export const createPixPayment = async (req: Request, res: Response) => {
       payerEmail, 
       payerFirstName, 
       payerLastName, 
-      payerPhone 
+      payerPhone,
+      payerCpf
     } = req.body;
     
     const userId = (req as any).user?.id || null;
@@ -146,6 +149,7 @@ export const createPixPayment = async (req: Request, res: Response) => {
       payerFirstName,
       payerLastName,
       payerPhone,
+      payerCpf,
       notificationUrl
     });
 

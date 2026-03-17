@@ -3,7 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     // URL do backend - usa ambiente ou fallback para localhost
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    
+    // Remover /api do final se estiver presente, pois o proxy já adiciona
+    if (backendUrl.endsWith('/api')) {
+      backendUrl = backendUrl.replace(/\/api$/, '');
+    }
+    
     const body = await request.json();
     
     console.log(`[Checkout Proxy] Forwarding to: ${backendUrl}/api/payments/checkout`);

@@ -246,10 +246,21 @@ export const getSubscriptionPlans = async (req: Request, res: Response) => {
 
 export const getSubscriptionStatus = async (req: Request, res: Response) => {
   try {
+    // Para desenvolvimento, retornar status padrão sem autenticação
     const tenantId = (req as any).user?.tenantId;
 
+    // Se não tiver usuário autenticado, retornar status padrão
     if (!tenantId) {
-      return res.status(401).json({ error: 'Tenant não identificado' });
+      return res.json({
+        hasSubscription: false,
+        plan: null,
+        status: null,
+        isActive: false,
+        isInTrial: false,
+        daysLeft: 0,
+        features: null,
+        nextBillingDate: null
+      });
     }
 
     const subscription = await Subscription.findOne({ tenantId });
@@ -262,7 +273,8 @@ export const getSubscriptionStatus = async (req: Request, res: Response) => {
         isActive: false,
         isInTrial: false,
         daysLeft: 0,
-        features: null
+        features: null,
+        nextBillingDate: null
       });
     }
 

@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const backendUrl = 'http://localhost:3001';
+    // URL do backend - usa ambiente ou fallback para localhost
+    let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    
+    // Remover /api do final se estiver presente, pois o proxy já adiciona
+    if (backendUrl.endsWith('/api')) {
+      backendUrl = backendUrl.replace(/\/api$/, '');
+    }
+    
     const body = await request.json();
     
+    console.log(`[Checkout Enhanced Proxy] Forwarding to: ${backendUrl}/api/payments/checkout-enhanced`);
+    
     // Criar preferência com parâmetros forçados
-    const response = await fetch(`${backendUrl}/api/payments/checkout`, {
+    const response = await fetch(`${backendUrl}/api/payments/checkout-enhanced`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,21 +32,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    
-    // Se for pagamento com cartão, retornar URL modificada com mais parâmetros
-    if (body.paymentMethod === 'credit_card' && data.initPoint) {
-      const baseUrl = data.initPoint;
-      const separator = baseUrl.includes('?') ? '&' : '?';
-      
-      // Parâmetros adicionais para forçar comportamento específico
-      const enhancedUrl = `${baseUrl}${separator}installments=1&disable_coupon=true&exclude_payment_type=atm,ticket,debit_card,bank_transfer&binary_mode=false&wallet=mercadopago&force_checkout_pro=true`;
-      
-      return NextResponse.json({
-        ...data,
-        initPoint: enhancedUrl,
-        enhancedCheckout: true
-      });
-    }
     
     return NextResponse.json(data);
   } catch (error) {

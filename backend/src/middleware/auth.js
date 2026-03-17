@@ -52,6 +52,32 @@ const authenticate = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.authenticate = authenticate;
+const optionalAuthenticate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return next();
+        }
+        const token = authHeader.substring(7);
+        try {
+            const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
+            const user = yield User_1.default.findById(decoded.userId).select('+password');
+            const tenant = yield Tenant_1.default.findById(decoded.tenantId);
+            if (user && user.isActive && tenant && tenant.status === 'active') {
+                req.user = user;
+                req.tenant = tenant;
+            }
+            next();
+        }
+        catch (jwtError) {
+            next();
+        }
+    }
+    catch (error) {
+        next();
+    }
+});
+exports.optionalAuthenticate = optionalAuthenticate;
 const authorize = (permissions) => {
     return (req, res, next) => {
         if (!req.user) {

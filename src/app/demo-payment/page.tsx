@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { Card, Button } from '@/components/UI';
 import { Check, AlertCircle, CreditCard, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function DemoPaymentPage() {
+function DemoPaymentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -220,5 +220,13 @@ export default function DemoPaymentPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function DemoPaymentPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <DemoPaymentContent />
+    </Suspense>
   );
 }

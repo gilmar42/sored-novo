@@ -55,15 +55,6 @@ export default function Home() {
           <p className="text-xl md:text-2xl text-muted-foreground mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000">
             Sistema de Orçamento Rápido Industrial. Aumente a precisão e velocidade das suas propostas comerciais.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
-            <Link href="/subscription" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full h-14 px-8 premium-gradient border-none group">
-                Ver Planos e Preços
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">

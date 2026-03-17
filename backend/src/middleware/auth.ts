@@ -58,6 +58,37 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
+export const optionalAuthenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next();
+    }
+
+    const token = authHeader.substring(7);
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string; tenantId: string };
+      
+      const user = await User.findById(decoded.userId).select('+password');
+      const tenant = await Tenant.findById(decoded.tenantId);
+      
+      if (user && user.isActive && tenant && tenant.status === 'active') {
+        req.user = user;
+        req.tenant = tenant;
+      }
+      
+      next();
+    } catch (jwtError) {
+      // Ignorar erros de token em autenticação opcional
+      next();
+    }
+  } catch (error) {
+    next();
+  }
+};
+
 export const authorize = (permissions: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {

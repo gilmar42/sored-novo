@@ -101,6 +101,7 @@ class MercadoPagoClient {
       firstName?: string;
       lastName?: string;
       phone?: string;
+      cpf?: string;
     };
   }) {
     if (!this.client) {
@@ -118,34 +119,26 @@ class MercadoPagoClient {
       }],
       back_urls: backUrls,
       auto_return: orderData.returnUrl?.startsWith('https') ? 'approved' : undefined,
-      notification_url: orderData.notificationUrl,
+      notification_url: orderData.notificationUrl?.startsWith('https') ? orderData.notificationUrl : undefined,
       external_reference: orderData.orderId,
       payment_methods: {
-        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }],
+        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }, { id: 'bank_transfer' }],
         excluded_payment_methods: [],
-        installments: 1,  // Força pagamento único (sem parcelas)
+        installments: 1,
         default_installments: 1
       },
-      // Desabilitar campo de cupom e outras funcionalidades
-      coupons: [],
-      date_of_expiration: null,
-      differential_pricing: null,
-      tracks: null,
-      binary_mode: false,
-      expiration_date_from: null,
-      expiration_date_to: null,
-      expires: false,
-      // Configurações adicionais para desabilitar cupons
-      marketplace_fee: 0,
-      marketplace: null,
-      shipments: null,
-      taxes: null,
+      binary_mode: true,
       payer: orderData.payer ? {
         email: orderData.payer.email,
         name: orderData.payer.firstName,
         surname: orderData.payer.lastName,
         phone: orderData.payer.phone ? {
-          number: orderData.payer.phone
+          area_code: orderData.payer.phone.replace(/\D/g, '').substring(0, 2),
+          number: orderData.payer.phone.replace(/\D/g, '').substring(2)
+        } : undefined,
+        identification: orderData.payer.cpf ? {
+          type: 'CPF',
+          number: orderData.payer.cpf.replace(/\D/g, '')
         } : undefined
       } : undefined
     };
@@ -154,75 +147,35 @@ class MercadoPagoClient {
       preferenceData.payment_methods = {
         default_payment_method_id: 'pix',
         excluded_payment_methods: [],
-        excluded_payment_types: []
+        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }, { id: 'credit_card' }]
       };
     } else if (orderData.paymentMethod === 'credit_card') {
       preferenceData.payment_methods = {
-        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }],
+        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }, { id: 'bank_transfer' }],
         excluded_payment_methods: [],
-        installments: 1,  // Força pagamento único para cartão de crédito
+        installments: 1,
         default_installments: 1
       };
-      // Desabilitar completamente cupons e parcelas para cartão
-      preferenceData.coupons = [];
-      preferenceData.binary_mode = false;
-      preferenceData.expires = false;
-      preferenceData.marketplace_fee = 0;
-      preferenceData.marketplace = null;
-      preferenceData.shipments = null;
-      preferenceData.taxes = null;
     }
 
     try {
       const preference = new Preference(this.client);
       const response = await preference.create({ body: preferenceData });
       
-      // Adicionar parâmetros na URL para forçar pagamento único sem cupons
-      const baseUrl = response.init_point || response.sandbox_init_point || '';
-      if (!baseUrl) {
-        throw new Error('URL do checkout não encontrada na resposta do Mercado Pago');
-      }
-      const separator = baseUrl.includes('?') ? '&' : '?';
-      
-      // Parâmetros para desabilitar cupons e forçar pagamento único
-      const forcedUrl = `${baseUrl}${separator}installments=1&disable_coupon=true&exclude_payment_type=atm,ticket,debit_card&binary_mode=false`;
-      
-      // Atualizar response com URL modificada
-      response.init_point = forcedUrl;
-      if (response.sandbox_init_point) {
-        response.sandbox_init_point = forcedUrl;
-      }
-      
-      logger.info('Preferência de pagamento criada com Mercado Pago real', { 
+      logger.info('Preferência de pagamento criada com Mercado Pago real', {
         preferenceId: response.id,
         orderId: orderData.orderId,
         isSandbox: this.accessToken.startsWith('TEST-'),
-        forcedUrl: forcedUrl
+        initPoint: response.init_point
       });
+
       return response;
     } catch (error: any) {
-      // Se as credenciais não funcionarem, criar uma página de pagamento real
-      logger.warn('Criando página de pagamento real devido a limitações das credenciais', { 
+      logger.error('Erro ao criar preferência Mercado Pago', {
         error: error.message,
-        orderId: orderData.orderId 
+        details: error.response?.data || error
       });
-      
-      // Criar preferência funcional que redireciona para página real
-      const realPreferenceId = `real_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const demoUrl = `http://localhost:3000/demo-payment?pref_id=${realPreferenceId}&return_url=${encodeURIComponent(orderData.returnUrl)}&amount=${orderData.amount}&description=${encodeURIComponent(orderData.description)}&real=true&installments=1&disable_coupon=true`;
-      
-      return {
-        id: realPreferenceId,
-        init_point: demoUrl,
-        sandbox_init_point: demoUrl,
-        sandbox: false,
-        items: preferenceData.items,
-        back_urls: preferenceData.back_urls,
-        auto_return: preferenceData.auto_return,
-        external_reference: preferenceData.external_reference,
-        collector_id: 123456789,
-        date_created: new Date().toISOString()
-      };
+      throw error;
     }
   }
 
@@ -234,6 +187,7 @@ class MercadoPagoClient {
     payerFirstName: string;
     payerLastName: string;
     payerPhone: string;
+    payerCpf?: string;
     notificationUrl: string;
   }) {
     if (!this.client) {
@@ -250,7 +204,11 @@ class MercadoPagoClient {
       payer: {
         email: orderData.payerEmail,
         first_name: orderData.payerFirstName,
-        last_name: orderData.payerLastName
+        last_name: orderData.payerLastName,
+        identification: orderData.payerCpf ? {
+          type: 'CPF',
+          number: orderData.payerCpf.replace(/\D/g, '')
+        } : undefined
       },
       payment_method_id: 'pix'
     };

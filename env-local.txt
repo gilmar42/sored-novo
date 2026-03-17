@@ -1,2 +1,4 @@
 NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY=APP_USR-1bf3b3d1-7c9f-4b5a-8e2d-3f4a5b6c7d8e
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+# NEXT_PUBLIC_API_URL pode ficar vazio para usar as rotas internas (/api/) do Next.js.
+# Somente especifique essa variável se o frontend precisar bater direto no backend externo.
+NEXT_PUBLIC_API_URL=
