@@ -132,3 +132,8 @@
 {"environment":"development","hasCredentials":true,"isSandbox":false,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMercado Pago configurado para pagamento real\u001b[39m","mode":"real-payment","timestamp":"2026-03-16 23:08:07:87"}
 {"environment":"development","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSORED Backend iniciado\u001b[39m","port":"3001","timestamp":"2026-03-16 23:08:08:88"}
 {"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMongoDB conectado com sucesso\u001b[39m","timestamp":"2026-03-16 23:08:08:88","uri":"mongodb://localhost:27017/sored"}
+{"duration":"6ms","ip":"::1","level":"\u001b[35mhttp\u001b[39m","message":"\u001b[35mHTTP Request\u001b[39m","method":"GET","status":200,"timestamp":"2026-03-16 23:09:16:916","url":"/public-key","userAgent":"node"}
+{"duration":"2ms","ip":"::1","level":"\u001b[35mhttp\u001b[39m","message":"\u001b[35mHTTP Request\u001b[39m","method":"GET","status":200,"timestamp":"2026-03-16 23:09:16:916","url":"/public-key","userAgent":"node"}
+{"environment":"development","hasCredentials":true,"isSandbox":false,"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMercado Pago configurado para pagamento real\u001b[39m","mode":"real-payment","timestamp":"2026-03-16 23:33:54:3354"}
+{"environment":"development","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSORED Backend iniciado\u001b[39m","port":"3001","timestamp":"2026-03-16 23:33:55:3355"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMongoDB conectado com sucesso\u001b[39m","timestamp":"2026-03-16 23:33:55:3355","uri":"mongodb://localhost:27017/sored"}

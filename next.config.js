@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone', // Configuração recomendada para deploy em VPS/Hostinger
   images: {
     remotePatterns: [
       {

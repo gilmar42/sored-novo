@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "cross-env PORT=3002 jest",
-    "deploy:prep": "npm run build && cd backend && npm run build"
+    "deploy:prep": "npm run build && cd backend && npm run build",
+    "hostinger:build": "npm run build && cd backend && npm install && npm run build",
+    "hostinger:start": "pm2 start ecosystem.config.js"
   },
   "keywords": [],
   "author": "",
