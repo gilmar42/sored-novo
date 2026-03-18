@@ -81,6 +81,13 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'SORED Backend is running' });
 });
+app.get('/api/test-routes', (req, res) => {
+    res.json({ 
+        message: 'Routes test',
+        node_env: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
+    });
+});
 // Endpoint para logs (apenas desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
     app.get('/api/logs', (req, res) => {

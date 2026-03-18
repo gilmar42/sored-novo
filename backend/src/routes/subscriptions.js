@@ -1,17 +1,13 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const subscriptionController_1 = require("../controllers/subscriptionController");
-const auth_1 = require("../middleware/auth");
-const router = (0, express_1.default.Router)();
-// Planos e status são públicos para desenvolvimento
-router.get('/plans', subscriptionController_1.getSubscriptionPlans);
-router.get('/status', subscriptionController_1.getSubscriptionStatus);
-router.post('/', auth_1.authenticate, subscriptionController_1.createSubscription);
-router.get('/', auth_1.authenticate, subscriptionController_1.getSubscription);
-router.put('/', auth_1.authenticate, subscriptionController_1.updateSubscription);
-router.delete('/', auth_1.authenticate, subscriptionController_1.cancelSubscription);
+const express = require("express");
+const subscriptionController = require("../controllers/subscriptionController");
+const auth = require("../middleware/auth");
+const router = express.Router();
+router.get('/plans', subscriptionController.getSubscriptionPlans);
+router.get('/status', subscriptionController.getSubscriptionStatus);
+router.post('/', auth.authenticate, subscriptionController.createSubscription);
+router.get('/', auth.authenticate, subscriptionController.getSubscription);
+router.put('/', auth.authenticate, subscriptionController.updateSubscription);
+router.delete('/', auth.authenticate, subscriptionController.cancelSubscription);
 exports.default = router;
