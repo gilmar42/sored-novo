@@ -32,24 +32,15 @@ const getBaseURL = () => {
   const envUrl = (process.env.NEXT_PUBLIC_API_URL || '').trim();
   const internalApi = '/api/';
 
-  // Log para depuração no console do navegador em produção
+  // Em produção (no ar), se tivermos uma URL de API definida, usá-la sempre
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    if (!envUrl) {
-      console.warn('[SORED API] NEXT_PUBLIC_API_URL não definida em produção! Usando proxy relativo /api/.');
-    } else {
-      console.log(`[SORED API] Usando URL base: ${envUrl}`);
-    }
-  }
-
-  if (!envUrl) {
+    if (envUrl) return ensureTrailingSlash(envUrl);
     return internalApi;
   }
 
-  if (shouldUseInternalApi(envUrl)) {
-    return internalApi;
-  }
+  if (!envUrl) return internalApi;
+  if (shouldUseInternalApi(envUrl)) return internalApi;
 
-  // Em produção, se a URL estiver definida, usá-la
   return ensureTrailingSlash(envUrl);
 };
 
