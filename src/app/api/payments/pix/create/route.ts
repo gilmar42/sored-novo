@@ -18,10 +18,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Remover /api do final se estiver presente, pois vamos adicionar manualmente
-    if (backendUrl.endsWith('/api')) {
-      backendUrl = backendUrl.replace(/\/api$/, '');
-    }
+    // Limpar a URL do backend: remover /api e barras finais
+    backendUrl = backendUrl.replace(/\/api\/?$/, '');
+    backendUrl = backendUrl.replace(/\/+$/, '');
     
     const body = await request.json();
     const targetUrl = `${backendUrl}/api/payments/pix/create`;
