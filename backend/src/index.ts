@@ -98,6 +98,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'SORED Backend is running' });
 });
 
+// Middleware para garantir que o prefixo /api seja tratado corretamente
+app.use((req, res, next) => {
+  if (!req.url.startsWith('/api')) {
+    req.url = `/api${req.url}`;
+  }
+  next();
+});
+
 // Endpoint para logs (apenas desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/logs', (req, res) => {

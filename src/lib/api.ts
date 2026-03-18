@@ -32,9 +32,8 @@ const getBaseURL = () => {
   const envUrl = (process.env.NEXT_PUBLIC_API_URL || '').trim();
   const internalApi = '/api/';
 
-  // Em produção (no ar), se tivermos uma URL de API definida, usá-la sempre
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    if (envUrl) return ensureTrailingSlash(envUrl);
+  // Na Vercel, usamos sempre o proxy relativo /api/ que é roteado pelo vercel.json
+  if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost')) {
     return internalApi;
   }
 
