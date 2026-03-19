@@ -37,61 +37,54 @@ const format = winston.format.combine(
   ),
 );
 
-const isVercel = process.env.VERCEL === '1';
-
 // Define transports
-const transports: winston.transport[] = [
+const transports = [
   // Console transport for development
   new winston.transports.Console({
     format: winston.format.combine(
       winston.format.colorize(),
       winston.format.simple()
     )
+  }),
+
+  // File transport for all logs
+  new DailyRotateFile({
+    filename: 'logs/all-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    maxSize: '20m',
+    maxFiles: '14d',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+    )
+  }),
+
+  // Separate file for errors
+  new DailyRotateFile({
+    filename: 'logs/error-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    level: 'error',
+    maxSize: '20m',
+    maxFiles: '30d',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+    )
+  }),
+
+  // Separate file for HTTP requests
+  new DailyRotateFile({
+    filename: 'logs/http-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    level: 'http',
+    maxSize: '20m',
+    maxFiles: '7d',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+    )
   })
 ];
-
-// Add file transports only if not running on Vercel
-if (!isVercel) {
-  transports.push(
-    // File transport for all logs
-    new DailyRotateFile({
-      filename: 'logs/all-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      maxSize: '20m',
-      maxFiles: '14d',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      )
-    }),
-
-    // Separate file for errors
-    new DailyRotateFile({
-      filename: 'logs/error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      level: 'error',
-      maxSize: '20m',
-      maxFiles: '30d',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      )
-    }),
-
-    // Separate file for HTTP requests
-    new DailyRotateFile({
-      filename: 'logs/http-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      level: 'http',
-      maxSize: '20m',
-      maxFiles: '7d',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      )
-    })
-  );
-}
 
 // Create the logger
 const logger = winston.createLogger({

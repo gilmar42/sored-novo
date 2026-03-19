@@ -28,9 +28,8 @@ router.post('/',
 );
 
 router.get('/', 
-  // Temporariamente remover autenticação para teste
-  // authenticate, 
-  // authorize(['materials:read']), 
+  authenticate, 
+  authorize(['materials:read']), 
   getMaterials
 );
 

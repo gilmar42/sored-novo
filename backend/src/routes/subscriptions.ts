@@ -11,9 +11,11 @@ import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
-// Planos e status são públicos para desenvolvimento
+// Planos são públicos
 router.get('/plans', getSubscriptionPlans);
-router.get('/status', getSubscriptionStatus);
+
+// Rotas protegidas
+router.get('/status', authenticate, getSubscriptionStatus);
 router.post('/', authenticate, createSubscription);
 router.get('/', authenticate, getSubscription);
 router.put('/', authenticate, updateSubscription);

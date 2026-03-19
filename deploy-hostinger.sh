@@ -35,7 +35,7 @@ HOSTINGER_USER="u123456789"  # Substitua com seu usuário Hostinger
 HOSTINGER_HOST="123.456.789.10"  # Substitua com seu IP Hostinger
 HOSTINGER_PATH="/home/u123456789/domains/api.sored-industrial.com/public_html"
 APP_NAME="sored-backend"
-NODE_VERSION="18"
+NODE_VERSION="20"
 
 log "🚀 Iniciando deploy para Hostinger"
 

@@ -11,7 +11,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   
   // Rotas que não devem ter a sidebar
-  const publicRoutes = ['/', '/login', '/register', '/subscription', '/payment-success', '/demo-payment'];
+  const publicRoutes = ['/', '/login', '/register'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   if (isPublicRoute) {

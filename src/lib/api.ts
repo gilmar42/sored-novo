@@ -1,46 +1,27 @@
 import axios from 'axios';
 
-const ensureTrailingSlash = (value: string) => {
-  if (!value) return '';
-  return value.endsWith('/') ? value : `${value}/`;
-};
-
-const isLocalhost = (host: string | null | undefined) => {
-  return host === 'localhost' || host === '127.0.0.1';
-};
-
-const shouldUseInternalApi = (envUrl: string) => {
-  if (typeof window === 'undefined') return false;
-  if (!envUrl.startsWith('http')) return false;
-
-  try {
-    const parsed = new URL(envUrl);
-    const frontendPort = window.location.port || '80';
-    const backendPort = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
-    if (isLocalhost(window.location.hostname) && isLocalhost(parsed.hostname) && backendPort !== frontendPort) {
-      console.warn('[SORED API] NEXT_PUBLIC_API_URL aponta para localhost com porta diferente; usando rota interna /api/ para evitar CORS.');
-      return true;
-    }
-  } catch (error) {
-    console.warn('[SORED API] Falha ao analisar NEXT_PUBLIC_API_URL:', error);
-  }
-
-  return false;
-};
-
 const getBaseURL = () => {
-  const envUrl = (process.env.NEXT_PUBLIC_API_URL || '').trim();
-  const internalApi = '/api/';
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  
+  // Se houver uma URL completa na variável de ambiente, use-a (Prioridade Máxima)
+  if (envUrl && envUrl.startsWith('http')) {
+    return envUrl.endsWith('/') ? envUrl : `${envUrl}/`;
+  } 
 
-  // Na Vercel, usamos sempre o proxy relativo /api/ que é roteado pelo vercel.json
-  if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname !== 'localhost')) {
-    return internalApi;
+  // Em produção ou local, agora usamos rotas internas do Next.js
+  const url = '/api';
+  const finalUrl = url.endsWith('/') ? url : `${url}/`;
+  
+  // Log de diagnóstico aprimorado
+  if (typeof window !== 'undefined') {
+    console.group('%c🔍 SORED API Diagnostic', 'color: #6366f1; font-weight: bold;');
+    console.log('Location:', window.location.href);
+    console.log('Mode: Internal API Routes');
+    console.log('Calculated API BaseURL:', finalUrl);
+    console.groupEnd();
   }
 
-  if (!envUrl) return internalApi;
-  if (shouldUseInternalApi(envUrl)) return internalApi;
-
-  return ensureTrailingSlash(envUrl);
+  return finalUrl;
 };
 
 const api = axios.create({
@@ -65,21 +46,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
-// Interceptor para tratar erros
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 404) {
-      console.error('[API Error] 404 - Endpoint not found:', error.config.url);
-      console.error('[API Error] Base URL:', error.config.baseURL);
-      console.error('[API Error] Full URL:', `${error.config.baseURL}${error.config.url}`);
-    }
-    return Promise.reject(error);
-  }
-);
-
-
 
 // Interceptor para tratar erros globais (ex: 401 Unauthorized)
 api.interceptors.response.use(

@@ -6,14 +6,12 @@ import { CreditCard, QrCode, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import api from '@/lib/api';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
-import CustomCheckout from './CustomCheckout';
 
 interface PaymentData {
   email: string;
   firstName: string;
   lastName: string;
   phone: string;
-  cpf: string;
 }
 
 interface PaymentProcessorProps {
@@ -44,13 +42,11 @@ export default function PaymentProcessor({
   onPaymentResultChange
 }: PaymentProcessorProps) {
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix'>('credit_card');
-  const [useCustomCheckout, setUseCustomCheckout] = useState(false); // Checkout personalizado por padrão desativado para permitir escolha de PIX
   const [paymentData, setPaymentData] = useState<PaymentData>(initialPayerData || {
     email: '',
     firstName: '',
     lastName: '',
-    phone: '',
-    cpf: ''
+    phone: ''
   });
   const [loading, setLoading] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(initialPaymentResult || null);
@@ -81,7 +77,6 @@ export default function PaymentProcessor({
     if (!paymentData.firstName) errors.push('Nome é obrigatório');
     if (!paymentData.lastName) errors.push('Sobrenome é obrigatório');
     if (!paymentData.phone) errors.push('Telefone é obrigatório');
-    if (!paymentData.cpf) errors.push('CPF é obrigatório');
 
     if (paymentData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paymentData.email)) {
       errors.push('Email inválido');
@@ -89,10 +84,6 @@ export default function PaymentProcessor({
 
     if (paymentData.phone && !/^(\d{10,11})$/.test(paymentData.phone.replace(/\D/g, ''))) {
       errors.push('Telefone deve ter 10 ou 11 dígitos');
-    }
-
-    if (paymentData.cpf && paymentData.cpf.replace(/\D/g, '').length !== 11) {
-      errors.push('CPF deve ter 11 dígitos');
     }
 
     if (errors.length > 0) {
@@ -150,8 +141,7 @@ export default function PaymentProcessor({
           payerEmail: paymentData.email,
           payerFirstName: paymentData.firstName,
           payerLastName: paymentData.lastName,
-          payerPhone: paymentData.phone,
-          payerCpf: paymentData.cpf
+          payerPhone: paymentData.phone
         }
       });
       
@@ -168,15 +158,9 @@ export default function PaymentProcessor({
       
       // Tentar abrir popup (pode ser bloqueado)
       try {
-        const popup = window.open(result.initPoint, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-          // Se popup foi bloqueado, redirecionar para mesma aba
-          console.warn('Popup bloqueado, redirecionando para mesma aba');
-          window.location.href = result.initPoint;
-        }
+        window.open(result.initPoint, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
       } catch (e) {
-        console.warn('Erro ao abrir popup, redirecionando para mesma aba:', e);
-        window.location.href = result.initPoint;
+        console.warn('Popup bloqueado pelo navegador');
       }
     } catch (error: any) {
       onError(error.message || 'Erro ao processar pagamento');
@@ -199,8 +183,7 @@ export default function PaymentProcessor({
           payerEmail: paymentData.email,
           payerFirstName: paymentData.firstName,
           payerLastName: paymentData.lastName,
-          payerPhone: paymentData.phone,
-          payerCpf: paymentData.cpf
+          payerPhone: paymentData.phone
         }
       });
       
@@ -243,7 +226,7 @@ export default function PaymentProcessor({
               <img 
                 src={`data:image/png;base64,${paymentResult.qrCode}`}
                 alt="QR Code PIX"
-                className="w-48 h-48 bg-slate-800 p-2 rounded-lg"
+                className="w-48 h-48 bg-white p-2 rounded"
               />
             )}
           </div>
@@ -328,7 +311,7 @@ export default function PaymentProcessor({
           </div>
           <h3 className="text-xl font-bold mb-2">Pagamento com Cartão de Crédito</h3>
           <p className="text-muted-foreground">
-            Pagamento único e seguro processado pelo Mercado Pago
+            Complete o pagamento no checkout seguro do Mercado Pago
           </p>
         </div>
 
@@ -345,10 +328,6 @@ export default function PaymentProcessor({
                 <span className="font-semibold">{formatPrice(plan.price)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tipo:</span>
-                <span className="font-semibold">Pagamento Único</span>
-              </div>
-              <div className="flex justify-between">
                 <span>Período:</span>
                 <span className="font-semibold">{plan.period}</span>
               </div>
@@ -360,7 +339,7 @@ export default function PaymentProcessor({
               <p className="font-bold mb-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" /> AMBIENTE DE TESTES (SANDBOX)
               </p>
-              <p>Utilize apenas cartões de teste do Mercado Pago. Pagamento é único e sem parcelas.</p>
+              <p>Utilize apenas cartões de teste do Mercado Pago. Cartões reais serão recusados.</p>
               <a 
                 href="https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/additional-content/test-cards" 
                 target="_blank" 
@@ -382,7 +361,7 @@ export default function PaymentProcessor({
               className="w-full"
             >
               <CreditCard className="w-4 h-4 mr-2" />
-              Pagar à Vista
+              Pagar no Mercado Pago
             </Button>
             
             <div className="grid grid-cols-2 gap-2">
@@ -401,7 +380,7 @@ export default function PaymentProcessor({
             </div>
             
             <p className="text-[10px] text-center text-muted-foreground mt-2">
-              Ao clicar em pagar, uma nova janela abrirá com o pagamento único. Após concluir, volte aqui para ver a confirmação.
+              Ao clicar em pagar, uma nova janela abrirá. Após concluir o pagamento, volte aqui para ver a confirmação.
             </p>
           </div>
         </div>
@@ -440,153 +419,116 @@ export default function PaymentProcessor({
             PIX
           </Button>
         </div>
-        
-        {paymentMethod === 'credit_card' && (
-          <div className="mt-3">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={useCustomCheckout}
-                onChange={(e) => setUseCustomCheckout(e.target.checked)}
-                className="rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500"
-              />
-              <span>Usar checkout personalizado (sem cupons, pagamento único)</span>
-            </label>
-          </div>
-        )}
       </div>
 
-      {paymentMethod === 'credit_card' && useCustomCheckout ? (
-        <CustomCheckout
-          plan={plan}
-          onSuccess={onSuccess}
-          onError={onError}
-          onCancel={onCancel}
-        />
-      ) : (
-        <>
-          <div className="space-y-4 mb-6">
-            <label className="block text-sm font-medium mb-2">Dados do Pagador</label>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={paymentData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Seu e-mail"
-                />
-          </div>
-
+      <div className="space-y-4 mb-6">
+        <label className="block text-sm font-medium mb-2">Dados do Pagador</label>
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">CPF (Obrigatório)</label>
+            <label className="block text-sm font-medium mb-1">Email</label>
             <input
-              type="text"
-              name="cpf"
-              value={paymentData.cpf}
+              type="email"
+              name="email"
+              value={paymentData.email}
               onChange={handleInputChange}
               className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="000.000.000-00"
+              placeholder="Seu e-mail"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Primeiro nome</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={paymentData.firstName}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Seu primeiro nome"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Sobrenome</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={paymentData.lastName}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Seu sobrenome"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Telefone</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={paymentData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="(00) 00000-0000"
-                  maxLength={15}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Primeiro nome</label>
+              <input
+                type="text"
+                name="firstName"
+                value={paymentData.firstName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Seu primeiro nome"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Sobrenome</label>
+              <input
+                type="text"
+                name="lastName"
+                value={paymentData.lastName}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Seu sobrenome"
+              />
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Button
-              onClick={paymentMethod === 'credit_card' ? processCreditCardPayment : processPixPayment}
-              disabled={loading || !isReady}
-              className="w-full"
-            >
-              {loading ? (
+          <div>
+            <label className="block text-sm font-medium mb-1">Telefone</label>
+            <input
+              type="tel"
+              name="phone"
+              value={paymentData.phone}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="(00) 00000-0000"
+              maxLength={15}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Button
+          onClick={paymentMethod === 'credit_card' ? processCreditCardPayment : processPixPayment}
+          disabled={loading || !isReady}
+          className="w-full"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Processando Pagamento...
+            </>
+          ) : !isReady ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Carregando Mercado Pago...
+            </>
+          ) : (
+            <>
+              {paymentMethod === 'credit_card' ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processando Pagamento...
-                </>
-              ) : !isReady ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Carregando Mercado Pago...
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Pagar com Cartão
                 </>
               ) : (
                 <>
-                  {paymentMethod === 'credit_card' ? (
-                    <>
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Pagar à Vista
-                    </>
-                  ) : (
-                    <>
-                      <QrCode className="w-4 h-4 mr-2" />
-                      Gerar PIX
-                    </>
-                  )}
+                  <QrCode className="w-4 h-4 mr-2" />
+                  Gerar PIX
                 </>
               )}
-            </Button>
+            </>
+          )}
+        </Button>
 
-            {!isReady && !loading && (
-              <p className="text-center text-[10px] text-yellow-500 mt-2">
-                O sistema de pagamentos está demorando. 
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="ml-1 underline hover:text-yellow-400"
-                >
-                  Recarregar página
-                </button>
-              </p>
-            )}
-            <Button
-              onClick={onCancel}
-              variant="outline"
-              disabled={loading}
-              className="w-full"
+        {!isReady && !loading && (
+          <p className="text-center text-[10px] text-yellow-500 mt-2">
+            O sistema de pagamentos está demorando. 
+            <button 
+              onClick={() => window.location.reload()} 
+              className="ml-1 underline hover:text-yellow-400"
             >
-              Cancelar
-            </Button>
-          </div>
-        </>
-      )}
+              Recarregar página
+            </button>
+          </p>
+        )}
+        <Button
+          onClick={onCancel}
+          variant="outline"
+          disabled={loading}
+          className="w-full"
+        >
+          Cancelar
+        </Button>
+      </div>
     </div>
   );
 }

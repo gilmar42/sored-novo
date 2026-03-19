@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { Card } from '@/components/UI';
 import { 
   Users, 
@@ -11,8 +12,7 @@ import {
   Clock, 
   AlertCircle,
   ArrowUpRight,
-  ArrowDownRight,
-  CheckCircle
+  ArrowDownRight
 } from 'lucide-react';
 import { formatCurrency, cn } from '@/utils/cn';
 
@@ -37,38 +37,15 @@ interface DashboardStats {
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lastPayment, setLastPayment] = useState<any>(null);
 
   useEffect(() => {
     fetchStats();
-    checkLastPayment();
   }, []);
-
-  const checkLastPayment = () => {
-    const savedPayment = localStorage.getItem('lastPayment');
-    if (savedPayment) {
-      try {
-        const payment = JSON.parse(savedPayment);
-        const paymentTime = new Date(payment.timestamp);
-        const now = new Date();
-        const hoursDiff = (now.getTime() - paymentTime.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursDiff <= 1) {
-          setLastPayment(payment);
-        } else {
-          localStorage.removeItem('lastPayment');
-        }
-      } catch (error) {
-        localStorage.removeItem('lastPayment');
-      }
-    }
-  };
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/dashboard/stats');
-      const data = await response.json();
-      setStats(data);
+      const response = await api.get('dashboard/stats');
+      setStats(response.data);
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
     } finally {
@@ -89,8 +66,8 @@ export default function DashboardPage() {
       title: 'Total Orçado', 
       value: formatCurrency(stats?.budgetStats.totalValue || 0), 
       icon: TrendingUp, 
-      color: 'text-emerald-400', 
-      bg: 'bg-emerald-500/20',
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-50',
       trend: '+12.5%',
       isPositive: true
     },
@@ -98,8 +75,8 @@ export default function DashboardPage() {
       title: 'Orçamentos', 
       value: stats?.overview.totalBudgets || 0, 
       icon: FileText, 
-      color: 'text-blue-400', 
-      bg: 'bg-blue-500/20',
+      color: 'text-indigo-600', 
+      bg: 'bg-indigo-50',
       trend: '+5',
       isPositive: true
     },
@@ -107,8 +84,8 @@ export default function DashboardPage() {
       title: 'Clientes', 
       value: stats?.overview.totalClients || 0, 
       icon: Users, 
-      color: 'text-cyan-400', 
-      bg: 'bg-cyan-500/20',
+      color: 'text-blue-600', 
+      bg: 'bg-blue-50',
       trend: '+2',
       isPositive: true
     },
@@ -116,47 +93,16 @@ export default function DashboardPage() {
       title: 'Materiais', 
       value: stats?.overview.totalMaterials || 0, 
       icon: Package, 
-      color: 'text-orange-400', 
-      bg: 'bg-orange-500/20',
+      color: 'text-orange-600', 
+      bg: 'bg-orange-50',
       trend: '+8',
       isPositive: true
     },
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Mensagem de Boas-vindas */}
-        {lastPayment && (
-          <div className="bg-green-500/10 border border-green-500/30 p-6 rounded-lg mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-green-400" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-green-400 mb-1">
-                  Bem-vindo ao SORED!
-                </h2>
-                <p className="text-green-300">
-                  Seu pagamento foi aprovado com sucesso. Você agora tem acesso total ao sistema.
-                </p>
-                <div className="mt-2 text-sm text-green-200">
-                  Plano: {lastPayment.description} | Valor: R$ {lastPayment.amount.toFixed(2)} | 
-                  ID: {lastPayment.id}
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  localStorage.removeItem('lastPayment');
-                  setLastPayment(null);
-                }}
-                className="text-green-400 hover:text-green-300"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
+    <div className="space-y-8">
+      <div>
         <h1 className="text-2xl font-bold tracking-tight">Visão Geral</h1>
         <p className="text-muted-foreground text-sm">Bem-vindo ao seu painel de controle industrial.</p>
       </div>

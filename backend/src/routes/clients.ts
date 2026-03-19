@@ -26,9 +26,8 @@ router.post('/',
 );
 
 router.get('/', 
-  // Temporariamente remover autenticação para teste
-  // authenticate, 
-  // authorize(['clients:read']), 
+  authenticate, 
+  authorize(['clients:read']), 
   getClients
 );
 

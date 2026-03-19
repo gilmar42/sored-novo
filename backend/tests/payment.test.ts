@@ -42,8 +42,8 @@ describe('Payment Integration', () => {
 
       // Check if routes are mounted
       const routes = app._router.stack
-        .filter((layer: any) => layer.name === 'router' && layer.regexp.toString().includes('webhooks'))
-        .map((layer: any) => layer.regexp.toString());
+        .filter(layer => layer.name === 'router' && layer.regexp.toString().includes('webhooks'))
+        .map(layer => layer.regexp.toString());
 
       expect(routes.length).toBeGreaterThan(0);
     });

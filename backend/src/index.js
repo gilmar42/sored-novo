@@ -21,9 +21,6 @@ const budgets_1 = __importDefault(require("./routes/budgets"));
 const pdf_1 = __importDefault(require("./routes/pdf"));
 const dashboard_1 = __importDefault(require("./routes/dashboard"));
 const settings_1 = __importDefault(require("./routes/settings"));
-const payments_1 = __importDefault(require("./routes/payments"));
-const webhooks_1 = __importDefault(require("./routes/webhooks"));
-const subscriptions_1 = __importDefault(require("./routes/subscriptions"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
@@ -81,13 +78,6 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'SORED Backend is running' });
 });
-app.get('/api/test-routes', (req, res) => {
-    res.json({ 
-        message: 'Routes test',
-        node_env: process.env.NODE_ENV,
-        timestamp: new Date().toISOString()
-    });
-});
 // Endpoint para logs (apenas desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
     app.get('/api/logs', (req, res) => {
@@ -117,9 +107,6 @@ app.use('/api/budgets', budgets_1.default);
 app.use('/api/pdf', pdf_1.default);
 app.use('/api/dashboard', dashboard_1.default);
 app.use('/api/settings', settings_1.default);
-app.use('/api/payments', payments_1.default);
-app.use('/api/webhooks', webhooks_1.default);
-app.use('/api/subscriptions', subscriptions_1.default);
 // Middleware de tratamento de erro global
 app.use((err, req, res, next) => {
     logger_1.default.error('Erro não tratado', {

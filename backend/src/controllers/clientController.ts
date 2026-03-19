@@ -84,66 +84,9 @@ export const createClient = async (req: CreateClientRequest, res: Response): Pro
 
 export const getClients = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Temporariamente permitir acesso sem autenticação
     if (!req.tenant) {
-      // Retornar dados simulados se não houver tenant
-      const mockClients = [
-        {
-          _id: "1",
-          name: "Indústria ABC Ltda",
-          email: "contato@industriaabc.com.br",
-          phone: "(11) 3456-7890",
-          document: "12.345.678/0001-90",
-          address: {
-            street: "Rua Industrial, 123",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01234-567"
-          },
-          isActive: true,
-          createdAt: "2024-01-15T10:00:00.000Z"
-        },
-        {
-          _id: "2",
-          name: "Metalúrgica Soluções",
-          email: "financeiro@metalurgicasolucoes.com.br",
-          phone: "(11) 2345-6789",
-          document: "98.765.432/0001-10",
-          address: {
-            street: "Av. Metalurgia, 456",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "04567-890"
-          },
-          isActive: true,
-          createdAt: "2024-02-20T14:30:00.000Z"
-        },
-        {
-          _id: "3",
-          name: "Componentes Industriais SA",
-          email: "comercial@componentesindustriais.com.br",
-          phone: "(11) 3456-7891",
-          document: "45.678.901/0001-23",
-          address: {
-            street: "Rua dos Componentes, 789",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "07890-123"
-          },
-          isActive: true,
-          createdAt: "2024-03-10T09:15:00.000Z"
-        }
-      ];
-
-      return res.json({
-        clients: mockClients,
-        pagination: {
-          page: 1,
-          limit: 10,
-          total: 3,
-          pages: 1
-        }
-      });
+      res.status(401).json({ message: 'Tenant não encontrado' });
+      return;
     }
 
     const page = parseInt(req.query.page as string) || 1;

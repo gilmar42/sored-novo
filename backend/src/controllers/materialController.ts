@@ -131,52 +131,9 @@ export const createMaterial = async (req: CreateMaterialRequest, res: Response):
 
 export const getMaterials = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Temporariamente permitir acesso sem autenticação
     if (!req.tenant) {
-      // Retornar dados simulados se não houver tenant
-      const mockMaterials = [
-        {
-          _id: "1",
-          name: "Aço Carbono 1020",
-          category: "Metais",
-          unitOfMeasure: "kg",
-          unitCost: 8.50,
-          itemType: "material",
-          size: "Chapa 20mm",
-          isActive: true
-        },
-        {
-          _id: "2",
-          name: "Alumínio 6061",
-          category: "Metais",
-          unitOfMeasure: "kg",
-          unitCost: 25.80,
-          itemType: "material",
-          size: "Barra 50mm",
-          isActive: true
-        },
-        {
-          _id: "3",
-          name: "Parafuso M12x50",
-          category: "Fixadores",
-          unitOfMeasure: "un",
-          unitCost: 2.35,
-          itemType: "component",
-          size: "M12x50mm",
-          isActive: true
-        }
-      ];
-
-      return res.json({
-        materials: mockMaterials,
-        categories: ["Metais", "Fixadores"],
-        pagination: {
-          page: 1,
-          limit: 10,
-          total: 3,
-          pages: 1
-        }
-      });
+      res.status(401).json({ message: 'Tenant não encontrado' });
+      return;
     }
 
     const page = parseInt(req.query.page as string) || 1;

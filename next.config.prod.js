@@ -11,7 +11,18 @@ const nextConfig = {
   
   // Configurações de imagem
   images: {
-    domains: ['api.mercadopago.com', 'sored-industrial.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.mercadopago.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sored-industrial.com',
+        pathname: '**',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
   },
   
@@ -58,19 +69,10 @@ const nextConfig = {
   // Configurações de output
   output: 'standalone',
   
-  // Configurações de experimentais
+  // Configurações experimentais
   experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: ['lucide-react'],
   },
-  
-  // Configurações de bundle analyzer (descomentar para análise)
-  // webpack: (config, { isServer }) => {
-  //   if (!isServer) {
-  //     config.optimization.minimize = true;
-  //   }
-  //   return config;
-  // },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

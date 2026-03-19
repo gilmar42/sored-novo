@@ -1,49 +1,16 @@
 import { NextResponse } from 'next/server';
+import mercadoPagoClient from '@/lib/mercadoPago';
 
 export async function GET() {
   try {
-    // URL do backend - usa ambiente ou fallback para localhost
-    let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    
-    // Limpar a URL do backend: remover /api e barras finais
-    backendUrl = backendUrl.replace(/\/api\/?$/, '');
-    backendUrl = backendUrl.replace(/\/+$/, '');
-    
-    console.log(`[Public Key Proxy] Forwarding to: ${backendUrl}/api/payments/public-key`);
-    
-    const response = await fetch(`${backendUrl}/api/payments/public-key`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`[Public Key Proxy] Backend error ${response.status}:`, errorData);
-      
-      return NextResponse.json(
-        { 
-          error: 'Erro ao buscar chave pública',
-          message: `Backend error: ${response.status}`,
-          details: errorData
-        },
-        { status: response.status }
-      );
+    if (!mercadoPagoClient.isConfigured()) {
+      return NextResponse.json({ error: 'Mercado Pago não configurado' }, { status: 503 });
     }
 
-    const data = await response.json();
-    console.log(`[Public Key Proxy] Success`);
-    
-    return NextResponse.json(data);
+    const publicKey = mercadoPagoClient.getPublicKey();
+    return NextResponse.json({ publicKey });
   } catch (error: any) {
-    console.error('[Public Key Proxy] Error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Erro interno do servidor',
-        message: error.message || 'Erro desconhecido'
-      },
-      { status: 500 }
-    );
+    console.error('Erro ao obter chave pública:', error);
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

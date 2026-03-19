@@ -1,5 +1,5 @@
 # Frontend Dockerfile para Produção
-FROM node:18-alpine AS deps
+FROM node:20-alpine AS deps
 
 # Instalar dependências
 RUN apk add --no-cache libc6-compat
@@ -9,7 +9,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Builder
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -28,7 +28,7 @@ ENV NEXT_PUBLIC_APP_DESCRIPTION=$NEXT_PUBLIC_APP_DESCRIPTION
 RUN npm run build
 
 # Imagem de produção
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV production

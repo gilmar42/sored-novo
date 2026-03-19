@@ -8,7 +8,7 @@ export default {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
       },
-      setupFiles: ['<rootDir>/jest.setup.js'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
       testPathIgnorePatterns: ['<rootDir>/backend/'],
     },
     {

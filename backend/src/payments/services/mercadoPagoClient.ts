@@ -1,66 +1,21 @@
 import { MercadoPagoConfig, Preference, Payment, PaymentRefund } from 'mercadopago';
 import logger from '../../utils/logger';
 
-const FALLBACK_RETURN_URL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscription?success=true`;
-
-const ensureAbsoluteUrl = (url?: string) => {
-  const candidate = url?.trim() || FALLBACK_RETURN_URL;
-  if (/^https?:\/\//i.test(candidate)) {
-    return candidate;
-  }
-
-  const origin = process.env.FRONTEND_URL?.replace(/\/$/, '') || 'http://localhost:3000';
-  return `${origin}/${candidate.replace(/^\/+/, '')}`;
-};
-
-const setSuccessParam = (url: string, value: string) => {
-  try {
-    const parsed = new URL(url);
-    parsed.searchParams.set('success', value);
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-};
-
-const buildBackUrls = (returnUrl?: string) => {
-  const canonical = setSuccessParam(ensureAbsoluteUrl(returnUrl), 'true');
-  return {
-    success: canonical,
-    failure: setSuccessParam(canonical, 'false'),
-    pending: setSuccessParam(canonical, 'pending')
-  };
-};
-
 class MercadoPagoClient {
   private accessToken: string = '';
   private publicKey: string = '';
   private client: MercadoPagoConfig | null = null;
 
   constructor() {
-    // Tentar usar credenciais do ambiente primeiro
     this.accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
     this.publicKey = process.env.MERCADO_PAGO_PUBLIC_KEY || '';
 
-    // Se não tiver credenciais válidas, usar credenciais de produção demonstrativas
-    if (!this.accessToken || !this.publicKey || this.accessToken.includes('your_') || this.publicKey.includes('your_')) {
-      // Credenciais de demonstração que funcionam para testes
-      this.accessToken = 'APP_USR-3154690148490663-030421-6e2b77e6d8b4f4a8d9b5e7f6a5c4b3d2';
-      this.publicKey = 'APP_USR-1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f7';
-      logger.warn('Usando credenciais de demonstração para pagamento real');
+    if (this.accessToken) {
+      this.client = new MercadoPagoConfig({ accessToken: this.accessToken });
+      logger.info('Mercado Pago configurado com sucesso (SDK v2)');
+    } else {
+      logger.warn('MERCADO_PAGO_ACCESS_TOKEN não configurado - Mercado Pago desativado');
     }
-
-    if (!this.accessToken || !this.publicKey) {
-      throw new Error('MERCADO_PAGO_ACCESS_TOKEN e MERCADO_PAGO_PUBLIC_KEY são obrigatórios');
-    }
-
-    this.client = new MercadoPagoConfig({ accessToken: this.accessToken });
-    logger.info('Mercado Pago configurado para pagamento real', { 
-      environment: process.env.NODE_ENV || 'development',
-      isSandbox: this.accessToken.startsWith('TEST-'),
-      hasCredentials: !!(this.accessToken && this.publicKey),
-      mode: 'real-payment'
-    });
   }
 
   async createPreference(data: {
@@ -101,14 +56,11 @@ class MercadoPagoClient {
       firstName?: string;
       lastName?: string;
       phone?: string;
-      cpf?: string;
     };
   }) {
     if (!this.client) {
       throw new Error('Mercado Pago não configurado');
     }
-
-    const backUrls = buildBackUrls(orderData.returnUrl);
 
     const preferenceData: any = {
       items: [{
@@ -117,28 +69,26 @@ class MercadoPagoClient {
         currency_id: 'BRL',
         unit_price: orderData.amount
       }],
-      back_urls: backUrls,
+      back_urls: {
+        success: orderData.returnUrl,
+        failure: orderData.returnUrl,
+        pending: orderData.returnUrl
+      },
       auto_return: orderData.returnUrl?.startsWith('https') ? 'approved' : undefined,
-      notification_url: orderData.notificationUrl?.startsWith('https') ? orderData.notificationUrl : undefined,
+      notification_url: orderData.notificationUrl?.includes('localhost') || orderData.notificationUrl?.includes('127.0.0.1') 
+        ? 'https://example.com/webhook-dummy' 
+        : orderData.notificationUrl,
       external_reference: orderData.orderId,
       payment_methods: {
-        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }, { id: 'bank_transfer' }],
         excluded_payment_methods: [],
-        installments: 1,
-        default_installments: 1
+        excluded_payment_types: [{ id: 'atm' }]
       },
-      binary_mode: true,
       payer: orderData.payer ? {
         email: orderData.payer.email,
         name: orderData.payer.firstName,
         surname: orderData.payer.lastName,
         phone: orderData.payer.phone ? {
-          area_code: orderData.payer.phone.replace(/\D/g, '').substring(0, 2),
-          number: orderData.payer.phone.replace(/\D/g, '').substring(2)
-        } : undefined,
-        identification: orderData.payer.cpf ? {
-          type: 'CPF',
-          number: orderData.payer.cpf.replace(/\D/g, '')
+          number: orderData.payer.phone
         } : undefined
       } : undefined
     };
@@ -147,33 +97,22 @@ class MercadoPagoClient {
       preferenceData.payment_methods = {
         default_payment_method_id: 'pix',
         excluded_payment_methods: [],
-        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }, { id: 'credit_card' }]
-      };
-    } else if (orderData.paymentMethod === 'credit_card') {
-      preferenceData.payment_methods = {
-        excluded_payment_types: [{ id: 'atm' }, { id: 'ticket' }, { id: 'debit_card' }, { id: 'bank_transfer' }],
-        excluded_payment_methods: [],
-        installments: 1,
-        default_installments: 1
+        excluded_payment_types: []
       };
     }
 
     try {
       const preference = new Preference(this.client);
       const response = await preference.create({ body: preferenceData });
-      
-      logger.info('Preferência de pagamento criada com Mercado Pago real', {
+      logger.info('Preferência de pagamento criada', { 
         preferenceId: response.id,
-        orderId: orderData.orderId,
-        isSandbox: this.accessToken.startsWith('TEST-'),
-        initPoint: response.init_point
+        orderId: orderData.orderId
       });
-
       return response;
     } catch (error: any) {
-      logger.error('Erro ao criar preferência Mercado Pago', {
-        error: error.message,
-        details: error.response?.data || error
+      logger.error('Erro ao criar preferência de pagamento', { 
+        error: error.message || error,
+        orderId: orderData.orderId 
       });
       throw error;
     }
@@ -187,7 +126,6 @@ class MercadoPagoClient {
     payerFirstName: string;
     payerLastName: string;
     payerPhone: string;
-    payerCpf?: string;
     notificationUrl: string;
   }) {
     if (!this.client) {
@@ -204,11 +142,7 @@ class MercadoPagoClient {
       payer: {
         email: orderData.payerEmail,
         first_name: orderData.payerFirstName,
-        last_name: orderData.payerLastName,
-        identification: orderData.payerCpf ? {
-          type: 'CPF',
-          number: orderData.payerCpf.replace(/\D/g, '')
-        } : undefined
+        last_name: orderData.payerLastName
       },
       payment_method_id: 'pix'
     };
@@ -224,8 +158,7 @@ class MercadoPagoClient {
     } catch (error: any) {
       logger.error('Erro ao criar pagamento PIX', { 
         error: error.message || error,
-        orderId: orderData.orderId,
-        statusCode: error.status
+        orderId: orderData.orderId 
       });
       throw error;
     }
@@ -254,26 +187,8 @@ class MercadoPagoClient {
         throw new Error('Pagamento não é do tipo PIX');
       }
     } catch (error: any) {
-      logger.warn('Erro ao obter QR Code PIX, usando fallback', { paymentId, error: error.message });
-      
-      // Gerar QR Code PIX real e funcional
-      const amount = 100; // Valor padrão
-      const orderId = paymentId || 'fallback';
-      
-      // Payload PIX formatado corretamente
-      const pixPayload = `00020126450014br.gov.bcb.pix0123sored-pix@sored.com5204000053039865406${amount.toFixed(2).replace('.', '')}5802BR5915SORED${orderId}6609BR62250521sored${orderId}6304E845`;
-      
-      // Gerar QR Code base64 mais realista (simulação de QR Code válido)
-      const qrCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAKQAAACkCAYAAAAZQYCaAAAACXBIWXMAAAsTAAALEwEAmpwYAAABWWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxMDIgNzkuMTIwMCAxOTI3LzAyLzA2LTIwOjAxOjA4ICAgICAgICAiPiA8cmRhdGE6eG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveG1sIiB4bWxuczp4PSJodHRwOi8vd3d3LnczLm9yZy8xOTk4LzA5LzIyLWRlY2ltYWwtZG9jdW1lbnQucmRmIiB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMCI+PHhtcE1NOkRlcml2ZWRGcm9tIG9yZ2luYWxFbnRpdHk9Im9yZy5nZXR0eWltYWdlcy5pbWFnZSIgc291cmNlPSJodHRwOi8vd3d3LmdldHR5aW1hZ2VzLmNvbS9pZy9jZmM2NjE1Mzk5YjQ1NDQ4YjcxNjY2ZjQxNjQ4M2U4ZC9qcGciLzIwMjQvMDUvMjEvMDcvMTYvMjAyNF8wNl8xNF8xMl8wMF9zLmpwZyIgLz48L3JkYXRhPjwvc3ZnPg==';
-      
-      return {
-        qrCode: qrCodeBase64,
-        qrCodeText: pixPayload,
-        copyAndPasteKey: pixPayload,
-        expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        amount: amount,
-        status: 'pending'
-      };
+      logger.error('Erro ao obter QR Code PIX', { paymentId, error: error.message || error });
+      throw error;
     }
   }
 
@@ -347,8 +262,7 @@ class MercadoPagoClient {
   }
 
   isConfigured(): boolean {
-    // Exigir cliente real para modo de produção
-    return !!(this.accessToken && this.publicKey && this.client);
+    return !!(this.accessToken && this.publicKey);
   }
 }
 

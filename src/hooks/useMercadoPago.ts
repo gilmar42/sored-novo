@@ -85,24 +85,17 @@ export const useMercadoPago = () => {
     amount: number;
     description: string;
     paymentMethod: 'credit_card' | 'pix';
-    payerEmail?: string;
-    payerFirstName?: string;
-    payerLastName?: string;
-    payerPhone?: string;
-    payerCpf?: string;
     payerData?: {
       payerEmail: string;
       payerFirstName: string;
       payerLastName: string;
       payerPhone: string;
-      payerCpf?: string;
     };
   }) => {
     try {
-      // Usar endpoint melhorado para cartão de crédito
       const endpoint = paymentData.paymentMethod === 'pix' 
         ? 'payments/pix/create' 
-        : 'payments/checkout-enhanced';
+        : 'payments/checkout';
 
       const response = await api.post(endpoint, {
         orderId: paymentData.orderId,
@@ -110,12 +103,6 @@ export const useMercadoPago = () => {
         description: paymentData.description,
         returnUrl: `${window.location.origin}/subscription?success=true`,
         paymentMethod: paymentData.paymentMethod,
-        // Mesclar dados do pagador passados diretamente ou em payerData
-        payerEmail: paymentData.payerEmail || paymentData.payerData?.payerEmail,
-        payerFirstName: paymentData.payerFirstName || paymentData.payerData?.payerFirstName,
-        payerLastName: paymentData.payerLastName || paymentData.payerData?.payerLastName,
-        payerPhone: paymentData.payerPhone || paymentData.payerData?.payerPhone,
-        payerCpf: paymentData.payerCpf || paymentData.payerData?.payerCpf,
         ...(paymentData.payerData ? paymentData.payerData : {})
       });
 
