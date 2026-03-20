@@ -1,52 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import Subscription from '@/models/Subscription';
 import { getAuth, unauthorized } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+import { differenceInDays, isAfter } from 'date-fns';
 
 export async function GET(req: NextRequest) {
   try {
     const auth = await getAuth(req);
     if (!auth) return unauthorized();
 
-    await dbConnect();
-    const tenantId = auth.tenant._id;
+    const tenantId = auth.tenant.id;
 
-    const subscription = await Subscription.findOne({ tenantId });
+    // Buscar assinatura ativa ou mais recente
+    const subscription = await prisma.subscription.findFirst({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' }
+    });
 
     if (!subscription) {
       return NextResponse.json({
         hasSubscription: false,
         plan: null,
-        status: null,
+        status: 'none',
         isActive: false,
         isInTrial: false,
         daysLeft: 0,
-        features: null
+        features: []
       });
     }
 
-    // Calcular dias restantes
     const now = new Date();
-    const endDate = new Date(subscription.endDate);
-    const diffTime = endDate.getTime() - now.getTime();
-    const daysLeft = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-
-    // Verificar se está ativo (considerando trial ou active)
-    const isActive = subscription.status === 'active' || (subscription.status === 'trial' && daysLeft > 0);
+    const isExpired = isAfter(now, subscription.endDate);
+    const isActive = subscription.status === 'active' && !isExpired;
+    const isInTrial = subscription.status === 'trial' && !isExpired;
+    const daysLeft = differenceInDays(subscription.endDate, now);
 
     return NextResponse.json({
       hasSubscription: true,
       plan: subscription.plan,
       status: subscription.status,
-      isActive: isActive,
-      isInTrial: subscription.status === 'trial',
-      daysLeft: daysLeft,
-      features: subscription.features,
-      nextBillingDate: subscription.nextBillingDate
+      isActive,
+      isInTrial,
+      daysLeft: daysLeft > 0 ? daysLeft : 0,
+      features: subscription.features
     });
 
   } catch (error: any) {
-    console.error('Erro ao verificar status da assinatura:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    console.error('[Subscription Status] Error:', error);
+    return NextResponse.json({ error: 'Erro interno do servidor', details: error.message }, { status: 500 });
   }
 }

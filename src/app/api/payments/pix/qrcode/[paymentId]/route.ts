@@ -1,73 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mercadoPago from '@/lib/mercadoPago';
+import { getAuth, unauthorized } from '@/lib/auth';
 
 export async function GET(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
-    const { paymentId } = await params;
-    // URL do backend - usa ambiente ou fallback para localhost
-    let backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    
-    // Remover /api do final se estiver presente, pois o proxy já adiciona
-    if (backendUrl.endsWith('/api')) {
-      backendUrl = backendUrl.replace(/\/api$/, '');
-    }
-    
-    console.log(`[PIX QR Proxy] Forwarding to: ${backendUrl}/api/payments/pix/qrcode/${paymentId}`);
-    
-    const response = await fetch(`${backendUrl}/api/payments/pix/qrcode/${paymentId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': request.headers.get('authorization') || '',
-        'Origin': request.headers.get('origin') || '',
-        'User-Agent': request.headers.get('user-agent') || '',
-      },
-    });
+    const auth = await getAuth(req);
+    if (!auth) return unauthorized();
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`[PIX QR Code Proxy] Backend error ${response.status}:`, errorData);
-      
+    const { paymentId } = await params;
+    
+    if (!paymentId) {
       return NextResponse.json(
-        { 
-          error: 'Erro ao buscar QR Code PIX',
-          message: `Backend error: ${response.status}`,
-          details: errorData
-        },
-        { status: response.status }
+        { error: 'ID do pagamento não fornecido' },
+        { status: 400 }
       );
     }
 
-    const data = await response.json();
-    console.log(`[PIX QR Code Proxy] Success`);
-    
-    return NextResponse.json(data, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
+    console.log(`[PIX QR Code] Fetching data for payment: ${paymentId}`);
+
+    // Obter dados do QR Code diretamente do Mercado Pago usando o SDK v2
+    const pixData = await mercadoPago.getPixQrCode(paymentId);
+
+    return NextResponse.json(pixData);
   } catch (error: any) {
-    console.error('[PIX QR Code Proxy] Error:', error);
+    console.error('[PIX QR Code] Error:', error.message || error);
+    
+    const statusCode = error.status || 500;
     return NextResponse.json(
       { 
-        error: 'Erro interno do servidor',
+        error: 'Erro ao buscar QR Code PIX',
         message: error.message || 'Erro desconhecido'
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

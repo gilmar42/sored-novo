@@ -22,3 +22,5 @@ Thumbs.db
 
 # tests
 coverage/
+
+/generated/prisma

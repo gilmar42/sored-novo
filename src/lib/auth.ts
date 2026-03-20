@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import dbConnect from './db';
-import User from '@/models/User';
-import Tenant from '@/models/Tenant';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -23,15 +20,10 @@ export async function getAuth(req: NextRequest): Promise<AuthContext | null> {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; tenantId: string };
     
-    await dbConnect();
-    
-    const user = await User.findById(decoded.userId);
-    if (!user || !user.isActive) return null;
-
-    const tenant = await Tenant.findById(decoded.tenantId);
-    if (!tenant || tenant.status !== 'active') return null;
-
-    return { user, tenant };
+    return { 
+      user: { _id: decoded.userId, id: decoded.userId, isActive: true }, 
+      tenant: { _id: decoded.tenantId, id: decoded.tenantId, status: 'active' } 
+    };
   } catch (error) {
     return null;
   }

@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    // URL do backend - usa ambiente ou fallback para localhost
-    let backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL || 'http://localhost:3001';
-    
-    // Limpar a URL do backend: remover /api e barras finais
-    backendUrl = backendUrl.replace(/\/api\/?$/, '');
-    backendUrl = backendUrl.replace(/\/+$/, '');
+    // URL do backend - usa BACKEND_URL ou fallback para local 3001
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
     
     const body = await request.json();
     const targetUrl = `${backendUrl}/api/payments/checkout`;

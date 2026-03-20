@@ -1,9 +1,0 @@
-{
-  "orderId": "test123",
-  "amount": 10,
-  "description": "Teste",
-  "payerEmail": "test@example.com",
-  "payerFirstName": "Test",
-  "payerLastName": "User",
-  "payerPhone": "11999999999"
-}

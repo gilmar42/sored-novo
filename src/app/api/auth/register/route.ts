@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import User from '@/models/User';
-import Tenant from '@/models/Tenant';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import prisma from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 const JWT_EXPIRES_IN = '7d';
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
     const {
       tenantName,
       tenantEmail,
@@ -19,55 +17,54 @@ export async function POST(req: NextRequest) {
       userPassword
     } = await req.json();
 
-    const normalizedTenantEmail = tenantEmail.trim().toLowerCase();
-    const normalizedUserEmail = userEmail.trim().toLowerCase();
+    const normalizedTenantEmail = tenantEmail?.trim().toLowerCase();
+    const normalizedUserEmail = userEmail?.trim().toLowerCase();
 
-    const existingTenant = await Tenant.findOne({ email: normalizedTenantEmail });
-    if (existingTenant) {
-      return NextResponse.json({ message: 'Empresa já cadastrada com este email' }, { status: 400 });
-    }
+    // Validar se o usuário já existe
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedUserEmail }
+    });
 
-    const existingUser = await User.findOne({ email: normalizedUserEmail });
     if (existingUser) {
-      return NextResponse.json({ message: 'Usuário já cadastrado com este email' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Este e-mail já está cadastrado.' },
+        { status: 400 }
+      );
     }
 
-    const tenant = new Tenant({
-      name: tenantName,
-      email: normalizedTenantEmail,
-      ...(tenantDocument && { document: tenantDocument }),
-      plan: 'starter',
-      status: 'active',
-      settings: {
-        defaultMargin: 30,
-        currency: 'BRL',
-        dateFormat: 'DD/MM/YYYY'
-      }
+    // Criar Tenant e Usuário em uma transação
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Criar a empresa (Tenant)
+      const tenant = await tx.tenant.create({
+        data: {
+          name: tenantName,
+          email: normalizedTenantEmail,
+          document: tenantDocument,
+          status: 'active', // Pode iniciar como 'active' se houver trial ou 'pending' se exigir pagamento
+          plan: 'starter'
+        }
+      });
+
+      // 2. Hash da senha
+      const hashedPassword = await bcrypt.hash(userPassword, 10);
+
+      // 3. Criar o usuário Admin
+      const user = await tx.user.create({
+        data: {
+          name: userName,
+          email: normalizedUserEmail,
+          password: hashedPassword,
+          role: 'admin',
+          tenantId: tenant.id,
+          isActive: true
+        }
+      });
+
+      return { tenant, user };
     });
-
-    await tenant.save();
-
-    const user = new User({
-      tenantId: tenant._id,
-      name: userName,
-      email: normalizedUserEmail,
-      password: userPassword,
-      role: 'admin',
-      permissions: [
-        'clients:read', 'clients:write', 'clients:delete',
-        'materials:read', 'materials:write', 'materials:delete',
-        'labor:read', 'labor:write', 'labor:delete',
-        'machines:read', 'machines:write', 'machines:delete',
-        'budgets:read', 'budgets:write', 'budgets:delete',
-        'reports:read', 'settings:read', 'settings:write',
-        'users:read', 'users:write', 'users:delete'
-      ]
-    });
-
-    await user.save();
 
     const token = jwt.sign(
-      { userId: user._id, tenantId: tenant._id },
+      { userId: result.user.id, tenantId: result.tenant.id },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
@@ -76,23 +73,26 @@ export async function POST(req: NextRequest) {
       message: 'Empresa e usuário cadastrados com sucesso',
       token,
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        permissions: user.permissions
+        id: result.user.id,
+        name: result.user.name,
+        email: result.user.email,
+        role: result.user.role,
+        permissions: []
       },
       tenant: {
-        id: tenant._id,
-        name: tenant.name,
-        email: tenant.email,
-        plan: tenant.plan,
-        settings: tenant.settings
+        id: result.tenant.id,
+        name: result.tenant.name,
+        email: result.tenant.email,
+        plan: result.tenant.plan,
+        settings: result.tenant.settings || {}
       }
     }, { status: 201 });
 
   } catch (error: any) {
-    console.error('Erro no registro:', error);
-    return NextResponse.json({ message: 'Erro interno do servidor' }, { status: 500 });
+    console.error('[Auth Register] Error:', error.message || error);
+    return NextResponse.json({ 
+      message: 'Erro interno do servidor',
+      details: error.message 
+    }, { status: 500 });
   }
 }

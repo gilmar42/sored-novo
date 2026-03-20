@@ -1,28 +1,49 @@
 import { NextResponse } from 'next/server';
-import { getPlanConfig } from '@/models/Subscription';
 
 export async function GET() {
   try {
-    const plans = ['monthly', 'annual'];
-    
-    const plansData = plans.map(plan => {
-      const config = getPlanConfig(plan);
-      const planNames: { [key: string]: string } = {
-        'monthly': 'Mensal',
-        'annual': 'Anual'
-      };
-      return {
-        id: plan,
-        name: planNames[plan] || plan.charAt(0).toUpperCase() + plan.slice(1),
-        price: config.amount,
+    const plansData = [
+      {
+        id: 'monthly',
+        name: 'Plano Mensal',
+        price: 97,
         currency: 'BRL',
-        period: plan === 'annual' ? 'year' : 'month',
-        trialDays: config.trialDays,
-        features: config.features,
-        savings: plan === 'annual' ? 'Economia de R$ 100 no ano' : null,
-        popular: plan === 'annual'
-      };
-    });
+        period: 'month',
+        trialDays: 5,
+        features: {
+          maxUsers: 5,
+          maxProjects: 100,
+          maxMaterials: 1000,
+          apiAccess: true,
+          advancedReports: true,
+          prioritySupport: false,
+          customBranding: false,
+          dataExport: true
+        },
+        savings: null,
+        popular: false
+      },
+      {
+        id: 'annual',
+        name: 'Plano Anual',
+        price: 997,
+        currency: 'BRL',
+        period: 'year',
+        trialDays: 5,
+        features: {
+          maxUsers: 10,
+          maxProjects: 9999,
+          maxMaterials: 99999,
+          apiAccess: true,
+          advancedReports: true,
+          prioritySupport: true,
+          customBranding: true,
+          dataExport: true
+        },
+        savings: 'Economia de R$ 167 no ano',
+        popular: true
+      }
+    ];
 
     return NextResponse.json(plansData);
   } catch (error: any) {

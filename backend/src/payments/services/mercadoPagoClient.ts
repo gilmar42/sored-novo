@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference, Payment, PaymentRefund } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment, PaymentRefund, PreApproval } from 'mercadopago';
 import logger from '../../utils/logger';
 
 class MercadoPagoClient {
@@ -62,6 +62,18 @@ class MercadoPagoClient {
       throw new Error('Mercado Pago não configurado');
     }
 
+    // Configuração de meios de pagamento
+    const paymentMethods: any = {
+      excluded_payment_methods: [],
+      excluded_payment_types: [{ id: 'atm' }],
+      installments: 1, // Limitar a 1 parcela (à vista)
+      default_installments: 1
+    };
+
+    if (orderData.paymentMethod === 'pix') {
+      paymentMethods.default_payment_method_id = 'pix';
+    }
+
     const preferenceData: any = {
       items: [{
         title: orderData.description,
@@ -79,10 +91,8 @@ class MercadoPagoClient {
         ? 'https://example.com/webhook-dummy' 
         : orderData.notificationUrl,
       external_reference: orderData.orderId,
-      payment_methods: {
-        excluded_payment_methods: [],
-        excluded_payment_types: [{ id: 'atm' }]
-      },
+      payment_methods: paymentMethods,
+      binary_mode: true, // Modo binário para aprovação imediata
       payer: orderData.payer ? {
         email: orderData.payer.email,
         name: orderData.payer.firstName,
@@ -92,14 +102,6 @@ class MercadoPagoClient {
         } : undefined
       } : undefined
     };
-
-    if (orderData.paymentMethod === 'pix') {
-      preferenceData.payment_methods = {
-        default_payment_method_id: 'pix',
-        excluded_payment_methods: [],
-        excluded_payment_types: []
-      };
-    }
 
     try {
       const preference = new Preference(this.client);
@@ -187,7 +189,11 @@ class MercadoPagoClient {
         throw new Error('Pagamento não é do tipo PIX');
       }
     } catch (error: any) {
-      logger.error('Erro ao obter QR Code PIX', { paymentId, error: error.message || error });
+      logger.error('Erro ao obter QR Code PIX', { 
+        paymentId, 
+        error: error.message || error,
+        apiResponse: error.response?.data || 'N/A'
+      });
       throw error;
     }
   }
@@ -253,6 +259,59 @@ class MercadoPagoClient {
       return response;
     } catch (error: any) {
       logger.error('Erro ao reembolsar pagamento', { paymentId, error: error.message || error });
+      throw error;
+    }
+  }
+
+  async createPreApproval(data: {
+    orderId: string;
+    amount: number;
+    description: string;
+    payerEmail: string;
+    returnUrl: string;
+    trialDays: number;
+    periodType: 'monthly' | 'annual';
+  }) {
+    if (!this.client) {
+      throw new Error('Mercado Pago não configurado');
+    }
+
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setFullYear(endDate.getFullYear() + 2); // Assinatura válida por 2 anos
+
+    const preApprovalData = {
+      back_url: data.returnUrl,
+      reason: data.description,
+      external_reference: data.orderId,
+      payer_email: data.payerEmail,
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: data.periodType === 'monthly' ? 'months' : 'years',
+        transaction_amount: data.amount,
+        currency_id: 'BRL',
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        has_trial: true,
+        trial_period: data.trialDays,
+        trial_period_type: 'days'
+      },
+      status: 'pending'
+    };
+
+    try {
+      const preApproval = new PreApproval(this.client);
+      const response = await preApproval.create({ body: preApprovalData });
+      logger.info('PreApproval (Assinatura) criada no Mercado Pago', { 
+        preApprovalId: response.id,
+        orderId: data.orderId 
+      });
+      return response;
+    } catch (error: any) {
+      logger.error('Erro ao criar PreApproval no Mercado Pago', { 
+        error: error.message || error,
+        orderId: data.orderId 
+      });
       throw error;
     }
   }

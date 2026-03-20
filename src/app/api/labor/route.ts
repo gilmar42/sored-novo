@@ -1,43 +1,67 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getAuth, unauthorized } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    // Dados simulados de mão de obra
-    const labor = [
-      {
-        _id: "1",
-        name: "Técnico de Usinagem",
-        description: "Operador de máquinas CNC",
-        hourlyRate: 75.50,
-        category: "Produção",
-        isActive: true,
-        createdAt: "2024-01-15T10:00:00.000Z"
-      },
-      {
-        _id: "2",
-        name: "Mecânico Industrial",
-        description: "Manutenção de equipamentos",
-        hourlyRate: 68.00,
-        category: "Manutenção",
-        isActive: true,
-        createdAt: "2024-02-20T14:30:00.000Z"
-      },
-      {
-        _id: "3",
-        name: "Engenheiro de Processos",
-        description: "Otimização de produção",
-        hourlyRate: 120.00,
-        category: "Engenharia",
-        isActive: true,
-        createdAt: "2024-03-10T09:15:00.000Z"
-      }
-    ];
+    const auth = await getAuth(req);
+    if (!auth) return unauthorized();
 
-    return NextResponse.json(labor);
+    const tenantId = auth.tenant.id;
+
+    const labor = await prisma.labor.findMany({
+      where: {
+        tenantId,
+        isActive: true
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
+
+    const formattedLabor = labor.map(l => ({
+      ...l,
+      _id: l.id
+    }));
+
+    return NextResponse.json(formattedLabor);
   } catch (error: any) {
     console.error('Erro ao buscar mão de obra:', error);
     return NextResponse.json(
       { error: 'Erro ao buscar mão de obra' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const auth = await getAuth(req);
+    if (!auth) return unauthorized();
+
+    const tenantId = auth.tenant.id;
+    const body = await req.json();
+    
+    const { name, hourlyRate, description } = body;
+
+    const newLabor = await prisma.labor.create({
+      data: {
+        tenantId,
+        name,
+        hourlyRate: parseFloat(hourlyRate) || 0,
+        description,
+        isActive: true
+      }
+    });
+
+    return NextResponse.json({
+      ...newLabor,
+      _id: newLabor.id
+    }, { status: 201 });
+  } catch (error: any) {
+    console.error('Erro ao criar mão de obra:', error);
+    return NextResponse.json(
+      { error: 'Erro ao criar mão de obra' },
       { status: 500 }
     );
   }

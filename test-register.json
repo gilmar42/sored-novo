@@ -1,8 +1,0 @@
-{
-  "tenantName": "Test Company",
-  "tenantEmail": "test@company.com",
-  "tenantDocument": "12345678901",
-  "name": "Test User",
-  "email": "test@user.com",
-  "password": "password123"
-}

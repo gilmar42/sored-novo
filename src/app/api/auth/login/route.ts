@@ -1,59 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import User from '@/models/User';
-import Tenant from '@/models/Tenant';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import prisma from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
     const { email, password } = await req.json();
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-    if (!user || !user.isActive) {
-      return NextResponse.json({ message: 'E-mail ou senha incorretos' }, { status: 401 });
+    if (!email || !password) {
+      return NextResponse.json({ message: 'E-mail e senha são obrigatórios' }, { status: 400 });
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return NextResponse.json({ message: 'E-mail ou senha incorretos' }, { status: 401 });
+    // Buscar usuário e incluir os dados da empresa (Tenant)
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      include: {
+        tenant: true
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: 'Credenciais inválidas' }, { status: 401 });
     }
 
-    const tenant = await Tenant.findById(user.tenantId);
-    if (!tenant || tenant.status !== 'active') {
-      return NextResponse.json({ message: 'Empresa inativa ou não encontrada' }, { status: 401 });
+    // Verificar senha
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return NextResponse.json({ message: 'Credenciais inválidas' }, { status: 401 });
     }
 
+    if (!user.isActive) {
+      return NextResponse.json({ message: 'Usuário desativado. Entre em contato com o suporte.' }, { status: 403 });
+    }
+
+    // Gerar Token
     const token = jwt.sign(
-      { userId: user._id, tenantId: user.tenantId },
+      { userId: user.id, tenantId: user.tenantId },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Atualizar último login (opcional, sem travar o fluxo)
+    prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() }
+    }).catch(err => console.error('Erro ao atualizar lastLogin:', err));
 
     return NextResponse.json({
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
-        permissions: user.permissions
+        permissions: (user.permissions as string[]) || []
       },
       tenant: {
-        id: tenant._id,
-        name: tenant.name,
-        plan: tenant.plan
+        id: user.tenant.id,
+        name: user.tenant.name,
+        plan: user.tenant.plan,
+        status: user.tenant.status,
+        settings: user.tenant.settings || {}
       }
     });
 
   } catch (error: any) {
-    console.error('Erro no login:', error);
+    console.error('[Auth Login] Error:', error);
     return NextResponse.json({ message: 'Erro interno do servidor' }, { status: 500 });
   }
 }

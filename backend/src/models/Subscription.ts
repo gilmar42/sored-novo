@@ -12,6 +12,7 @@ export interface ISubscription extends Document {
   paymentMethod: 'credit_card' | 'pix' | 'bank_transfer';
   mercadoPagoPaymentId?: string;
   mercadoPagoSubscriptionId?: string;
+  mercadoPagoPreApprovalId?: string;
   autoRenew: boolean;
   trialDaysUsed: number;
   trialDaysTotal: number;
@@ -84,6 +85,10 @@ const SubscriptionSchema = new Schema<ISubscription>({
     type: String,
     sparse: true
   },
+  mercadoPagoPreApprovalId: {
+    type: String,
+    sparse: true
+  },
   autoRenew: {
     type: Boolean,
     default: true
@@ -143,6 +148,7 @@ const SubscriptionSchema = new Schema<ISubscription>({
 SubscriptionSchema.index({ tenantId: 1, status: 1 });
 SubscriptionSchema.index({ nextBillingDate: 1 });
 SubscriptionSchema.index({ mercadoPagoSubscriptionId: 1 }, { sparse: true });
+SubscriptionSchema.index({ mercadoPagoPreApprovalId: 1 }, { sparse: true });
 
 // Métodos estáticos para obter configurações de planos
 export const getPlanConfig = function(plan: string) {

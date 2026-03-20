@@ -1,75 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mercadoPago from '@/lib/mercadoPago';
+import { getAuth, unauthorized } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    // URL do backend - usa ambiente ou fallback para localhost
-    let backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_URL || 'http://localhost:3001';
-    
-    // Log para depuração no servidor
-    console.log(`[PIX Create Proxy] Raw Backend URL: ${backendUrl}`);
-    
-    // Garantir que a URL comece com http
-    if (!backendUrl.startsWith('http')) {
-      // Se estiver rodando no mesmo servidor, assume localhost se for porta ou completa com https
-      if (backendUrl.startsWith(':')) {
-        backendUrl = `http://localhost${backendUrl}`;
-      } else {
-        backendUrl = `https://${backendUrl}`;
-      }
+    const auth = await getAuth(req);
+    // Para pagamentos, podemos permitir acesso se houver token ou dependendo do contexto.
+    // Se o checkout for público, pulamos o getAuth ou tratamos como opcional.
+    // Mas para segurança do tenant, vamos validar.
+    if (!auth) return unauthorized();
+
+    const body = await req.json();
+    const { amount, description, payer, orderId } = body;
+
+    if (!amount || !payer?.email) {
+      return NextResponse.json(
+        { error: 'Dados incompletos para criação do PIX' },
+        { status: 400 }
+      );
     }
 
-    // Limpar a URL do backend: remover /api e barras finais
-    backendUrl = backendUrl.replace(/\/api\/?$/, '');
-    backendUrl = backendUrl.replace(/\/+$/, '');
-    
-    const body = await request.json();
-    const targetUrl = `${backendUrl}/api/payments/pix/create`;
-    
-    console.log(`[PIX Create Proxy] Forwarding to: ${targetUrl}`);
-    
-    const response = await fetch(targetUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': request.headers.get('authorization') || '',
-      },
-      body: JSON.stringify(body),
+    console.log(`[PIX Create] Creating PIX payment for order: ${orderId || 'N/A'}`);
+
+    // Criar o pagamento PIX usando o SDK v2
+    const payment = await mercadoPago.createPixPayment({
+      orderId: orderId || `ORDER-${Date.now()}`,
+      amount: parseFloat(amount),
+      description: description || 'Assinatura SORED Industrial',
+      payerEmail: payer.email,
+      payerFirstName: payer.firstName || 'Cliente',
+      payerLastName: payer.lastName || 'SORED',
+      payerPhone: payer.phone || '',
+      notificationUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/mercadopago`
     });
 
-    console.log(`[PIX Create Proxy] Backend response status: ${response.status}`);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[PIX Create Proxy] Backend error:`, errorText);
-      
-      try {
-        const errorJson = JSON.parse(errorText);
-        return NextResponse.json(errorJson, { status: response.status });
-      } catch (e) {
-        return NextResponse.json(
-          { error: 'Erro no backend', details: errorText },
-          { status: response.status }
-        );
-      }
-    }
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    // O SDK v2 retorna a resposta no formato esperado
+    return NextResponse.json(payment);
   } catch (error: any) {
-    console.error('[PIX Create Proxy] Exception:', error);
+    console.error('[PIX Create] Error creating PIX:', error.message || error);
+    
+    // Tratar erros específicos do Mercado Pago
+    const statusCode = error.status || 500;
+    const errorMessage = error.message || 'Erro ao processar pagamento PIX';
+
     return NextResponse.json(
-      { error: 'Erro interno no proxy', message: error.message },
-      { status: 500 }
+      { 
+        error: 'Erro no processamento do pagamento', 
+        message: errorMessage,
+        details: error.cause || null
+      },
+      { status: statusCode }
     );
   }
 }
 
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });

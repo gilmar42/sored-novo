@@ -71,23 +71,39 @@ export const createSubscription = async (req: Request, res: Response) => {
           payerPhone: payerData.phone,
           notificationUrl
         });
+      } else if (paymentMethod === 'credit_card') {
+        // Criar Assinatura Recorrente com Trial de 5 dias
+        const preApproval = await mercadoPagoClient.createPreApproval({
+          orderId: `subscription_${subscription._id}`,
+          amount: planConfig.amount,
+          description: `Assinatura ${plan} - SORED (5 Dias de Teste)`,
+          payerEmail: payerData.email,
+          returnUrl: `${process.env.FRONTEND_URL}/subscription/success`,
+          trialDays: planConfig.trialDays,
+          periodType: plan === 'annual' ? 'annual' : 'monthly'
+        });
+        
+        payment = preApproval;
       } else {
-        // Criar preferência para cartão
+        // Criar preferência para outros métodos (ex: boleto se implementado como checkout pro)
         const preference = await mercadoPagoClient.createPaymentPreference({
           orderId: `subscription_${subscription._id}`,
           amount: planConfig.amount,
           description: `Assinatura ${plan} - SORED`,
           returnUrl: `${process.env.FRONTEND_URL}/subscription/success`,
-          notificationUrl,
-          paymentMethod: paymentMethod === 'credit_card' ? 'credit_card' : undefined
+          notificationUrl
         });
         
         payment = preference;
       }
 
       // Atualizar assinatura com IDs do Mercado Pago
-      if (payment.id) {
-        subscription.mercadoPagoPaymentId = payment.id.toString();
+      if (payment && payment.id) {
+        if (paymentMethod === 'credit_card') {
+          subscription.mercadoPagoPreApprovalId = payment.id.toString();
+        } else {
+          subscription.mercadoPagoPaymentId = payment.id.toString();
+        }
         await subscription.save();
       }
 

@@ -1,0 +1,15 @@
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMercado Pago configurado com sucesso (SDK v2)\u001b[39m","timestamp":"2026-03-19 22:56:54:5654"}
+{"environment":"development","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSORED Backend iniciado\u001b[39m","port":"3001","timestamp":"2026-03-19 22:56:55:5655"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMongoDB conectado com sucesso\u001b[39m","timestamp":"2026-03-19 22:56:55:5655","uri":"mongodb://localhost:27017/sored"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mHealth check hit\u001b[39m","timestamp":"2026-03-19 22:57:47:5747"}
+{"duration":"12ms","ip":"::1","level":"\u001b[35mhttp\u001b[39m","message":"\u001b[35mHTTP Request\u001b[39m","method":"GET","status":200,"timestamp":"2026-03-19 22:57:47:5747","url":"/api/health","userAgent":"curl/8.18.0"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMercado Pago configurado com sucesso (SDK v2)\u001b[39m","timestamp":"2026-03-19 22:58:15:5815"}
+{"environment":"development","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSORED Backend iniciado\u001b[39m","port":"3001","timestamp":"2026-03-19 22:58:16:5816"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMongoDB conectado com sucesso\u001b[39m","timestamp":"2026-03-19 22:58:16:5816","uri":"mongodb://localhost:27017/sored"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMercado Pago configurado com sucesso (SDK v2)\u001b[39m","timestamp":"2026-03-19 23:01:13:113"}
+{"environment":"development","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mSORED Backend iniciado\u001b[39m","port":"3001","timestamp":"2026-03-19 23:01:13:113"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mMongoDB conectado com sucesso\u001b[39m","timestamp":"2026-03-19 23:01:13:113","uri":"mongodb://localhost:27017/sored"}
+{"amount":10,"description":"test","level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mCreating checkout session with body:\u001b[39m","orderId":"test","resolvedReturnUrl":"http://localhost:3000/subscription?success=true","timestamp":"2026-03-19 23:02:24:224"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mPreferência de pagamento criada\u001b[39m","orderId":"test","preferenceId":"194511733-5117b10b-4840-44cf-9d6c-1a897bd8e80e","timestamp":"2026-03-19 23:02:25:225"}
+{"level":"\u001b[32minfo\u001b[39m","message":"\u001b[32mPagamento interno criado para rastreamento\u001b[39m","paymentId":"69bcaab106ee69f400b9894b","preferenceId":"194511733-5117b10b-4840-44cf-9d6c-1a897bd8e80e","timestamp":"2026-03-19 23:02:25:225"}
+{"duration":"734ms","ip":"::1","level":"\u001b[35mhttp\u001b[39m","message":"\u001b[35mHTTP Request\u001b[39m","method":"POST","status":200,"timestamp":"2026-03-19 23:02:25:225","url":"/checkout","userAgent":"node"}

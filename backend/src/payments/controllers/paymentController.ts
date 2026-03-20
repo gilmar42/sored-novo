@@ -158,6 +158,11 @@ export const createPixPayment = async (req: Request, res: Response) => {
       description
     });
 
+    logger.info('Resposta da criação de pagamento PIX do MP:', { 
+      id: payment.id, 
+      status: payment.status 
+    });
+
     res.json({
       paymentId: payment.id,
       status: payment.status,
@@ -178,7 +183,9 @@ export const getPixQrCode = async (req: Request, res: Response) => {
       return res.status(503).json({ error: 'Mercado Pago não configurado' });
     }
 
+    logger.info('Solicitando QR Code para paymentId:', { paymentId });
     const qrCode = await mercadoPagoClient.getPixQrCode(paymentId);
+    logger.info('QR Code obtido com sucesso para paymentId:', { paymentId });
     res.json(qrCode);
   } catch (error: any) {
     logger.error('Erro ao obter QR Code PIX', { error: error.message });
@@ -258,6 +265,44 @@ export const getPaymentStatus = async (req: Request, res: Response) => {
   } catch (error: any) {
     logger.error('Erro ao consultar status do pagamento', { error: error.message, paymentId: req.params.paymentId });
     res.status(200).json({ status: 'pending', id: req.params.paymentId }); // Falha silenciosa para o frontend
+  }
+};
+
+export const createPreApproval = async (req: Request, res: Response) => {
+  try {
+    const { 
+      orderId, 
+      amount, 
+      description, 
+      payerEmail,
+      returnUrl,
+      trialDays,
+      periodType
+    } = req.body;
+
+    if (!mercadoPagoClient || !mercadoPagoClient.isConfigured()) {
+      return res.status(503).json({ error: 'Mercado Pago não configurado' });
+    }
+
+    const preApproval = await mercadoPagoClient.createPreApproval({
+      orderId,
+      amount,
+      description,
+      payerEmail,
+      returnUrl,
+      trialDays,
+      periodType
+    });
+
+    res.json({
+      id: preApproval.id,
+      status: preApproval.status,
+      init_point: (preApproval as any).init_point,
+      external_reference: preApproval.external_reference
+    });
+  } catch (error: any) {
+    logger.error('Erro ao criar PreApproval', { error: error.message });
+    res.status(500).json({ error: 'Erro interno do servidor ao criar assinatura' });
   }
 };
 
