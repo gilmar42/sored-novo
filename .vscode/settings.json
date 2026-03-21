@@ -1,0 +1,9 @@
+{
+    "WillLuke.nextjs.addTypesOnSave": true,
+    "WillLuke.nextjs.hasPrompted": true,
+
+    // Garante que o VS Code use o TypeScript do projeto (node_modules),
+    // evitando avisos de deprecacao vindos do TypeScript "built-in"/nightly.
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
+}

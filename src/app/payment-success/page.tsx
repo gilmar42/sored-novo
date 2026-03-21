@@ -42,7 +42,9 @@ export default function PaymentSuccessPage() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          window.location.href = '/dashboard';
+          // Se o usuario nao estiver autenticado, ir para login em vez de cair em redirect inesperado.
+          const hasToken = !!localStorage.getItem('token');
+          window.location.href = hasToken ? '/dashboard' : '/login';
           return 0;
         }
         return prev - 1;

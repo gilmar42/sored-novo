@@ -57,7 +57,7 @@ export async function POST(
     });
 
   } catch (error: any) {
-    console.error('[PDF Generation] Error:', error);
+    console.error('[Geracao de PDF] Erro:', error);
     return NextResponse.json({ message: 'Erro ao processar dados do PDF' }, { status: 500 });
   }
 }

@@ -3,8 +3,9 @@ import app from '../src/index';
 import Payment from '../src/models/Payment';
 import PaymentEvent from '../src/models/PaymentEvent';
 import { connectDB } from '../src/config/database';
+import paymentService from '../src/payments/services/paymentService';
 
-describe('Payment Integration', () => {
+describe('Integracao de Pagamentos', () => {
   // Remove database connection for now
   // beforeAll(async () => {
   //   await connectDB();
@@ -22,33 +23,34 @@ describe('Payment Integration', () => {
   // });
 
   describe('POST /api/payments', () => {
-    it('should create a payment', async () => {
-      // Mock Mercado Pago response
+    it('deve criar um pagamento', async () => {
+      // Mock de resposta do Mercado Pago
       const mockPreference = {
         id: '123456',
         init_point: 'https://mercadopago.com/checkout/test'
       };
 
-      // This would need proper mocking of the MercadoPago client
-      // For now, just test the structure
+      // Isso precisaria de um mock adequado do client do Mercado Pago.
+      // Por enquanto, apenas testamos a estrutura.
       expect(true).toBe(true);
     });
   });
 
-  describe('Webhook Handler', () => {
-    it('should have webhook route configured', () => {
-      // Check if the app has the webhook route
+  describe('Handler de Webhook', () => {
+    it('deve ter a rota de webhook configurada', () => {
+      // Verifica se o app tem a rota de webhook
       expect(app).toBeDefined();
 
-      // Check if routes are mounted
+      // Verifica se as rotas foram montadas
       const routes = app._router.stack
-        .filter(layer => layer.name === 'router' && layer.regexp.toString().includes('webhooks'))
-        .map(layer => layer.regexp.toString());
+        .filter((layer: any) => layer.name === 'router' && layer.regexp?.toString().includes('webhooks'))
+        .map((layer: any) => layer.regexp.toString());
+      console.log('router layers', app._router.stack.map((layer: any) => ({ name: layer.name, path: layer.route?.path, regexp: layer.regexp?.toString() })));
 
       expect(routes.length).toBeGreaterThan(0);
     });
 
-    it('should process payment webhook', async () => {
+    it('deve processar o webhook de pagamento', async () => {
       const webhookData = {
         type: 'payment',
         data: {
@@ -56,13 +58,8 @@ describe('Payment Integration', () => {
         }
       };
 
-      // Mock the payment service to avoid database calls
-      const mockProcessWebhook = jest.fn().mockResolvedValue(undefined);
-      jest.doMock('../src/payments/services/paymentService', () => ({
-        default: {
-          processWebhook: mockProcessWebhook
-        }
-      }));
+      // Mock do service para evitar chamadas ao banco / Mercado Pago
+      const processWebhookSpy = jest.spyOn(paymentService, 'processWebhook').mockResolvedValue(undefined as any);
 
       const response = await request(app)
         .post('/api/webhooks/mercadopago')
@@ -71,7 +68,10 @@ describe('Payment Integration', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('received', true);
-      expect(mockProcessWebhook).toHaveBeenCalledWith(webhookData);
+
+      // O handler roda o processamento em setImmediate; aguarda um tick.
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      expect(processWebhookSpy).toHaveBeenCalledWith(webhookData);
     });
   });
 });

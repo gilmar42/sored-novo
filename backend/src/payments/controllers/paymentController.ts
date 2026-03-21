@@ -67,7 +67,8 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
     const userId = (req as any).user?.id || null;
 
     if (!returnUrl) {
-      returnUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscription?success=true`;
+      // Em producao, evite retornar para rotas protegidas (ex: /subscription) para nao cair em /login.
+      returnUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`;
     }
 
     logger.info('Creating checkout session with body:', { ...req.body, resolvedReturnUrl: returnUrl });

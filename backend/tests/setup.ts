@@ -7,14 +7,17 @@ dotenv.config({ path: '.env.test' });
 process.env.NODE_ENV = 'test';
 process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sored_test';
 
-// Mock do mongoose para evitar conexão real em alguns testes
-jest.mock('mongoose', () => ({
-  connect: jest.fn().mockResolvedValue({}),
-  connection: {
-    close: jest.fn().mockResolvedValue({}),
-    on: jest.fn(),
-    once: jest.fn(),
-  },
-  model: jest.fn(),
-  Schema: jest.fn(),
-}));
+// Evita conexao real, mas preserva Schema/Types (necessario para carregar os models).
+jest.mock('mongoose', () => {
+  const actual = jest.requireActual('mongoose');
+  return {
+    ...actual,
+    connect: jest.fn().mockResolvedValue(actual),
+    connection: {
+      ...actual.connection,
+      close: jest.fn().mockResolvedValue(undefined),
+      on: jest.fn(),
+      once: jest.fn(),
+    },
+  };
+});

@@ -61,7 +61,7 @@ app.use((req, res, next) => {
     res.on('finish', () => {
         var _a, _b;
         const duration = Date.now() - start;
-        logger_1.default.http('HTTP Request', {
+        logger_1.default.http('Requisicao HTTP', {
             method: req.method,
             url: req.url,
             status: res.statusCode,
@@ -74,9 +74,11 @@ app.use((req, res, next) => {
     });
     next();
 });
-(0, database_1.connectDB)();
+if (process.env.NODE_ENV !== 'test') {
+    (0, database_1.connectDB)();
+}
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'SORED Backend is running' });
+    res.json({ status: 'OK', message: 'Backend do SORED esta em execucao' });
 });
 // Endpoint para logs (apenas desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
@@ -125,7 +127,9 @@ app.use((err, req, res, next) => {
         message
     });
 });
-app.listen(PORT, () => {
-    logger_1.default.info('SORED Backend iniciado', { port: PORT, environment: process.env.NODE_ENV });
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        logger_1.default.info('SORED Backend iniciado', { port: PORT, environment: process.env.NODE_ENV });
+    });
+}
 exports.default = app;

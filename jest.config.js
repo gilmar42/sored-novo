@@ -16,6 +16,8 @@ export default {
       preset: 'ts-jest',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/backend/tests/**/*.test.(ts|js)'],
+      // Preferir TypeScript quando existir .ts e .js com o mesmo nome (evita cair em JS legado dentro de backend/src).
+      moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
     },
   ],
 };

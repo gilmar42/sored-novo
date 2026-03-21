@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const targetUrl = `${backendUrl}/api/payments/checkout-enhanced`;
     
-    console.log(`[Checkout Enhanced Proxy] Forwarding to: ${targetUrl}`);
+    console.log(`[Checkout Enhanced Proxy] Encaminhando para: ${targetUrl}`);
     
     // Criar preferência com parâmetros forçados
     const response = await fetch(targetUrl, {
@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    console.log(`[Checkout Enhanced Proxy] Backend response status: ${response.status}`);
+    console.log(`[Checkout Enhanced Proxy] Status de resposta do backend: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Checkout Enhanced Proxy] Backend error:`, errorText);
+      console.error(`[Checkout Enhanced Proxy] Erro do backend:`, errorText);
       
       return NextResponse.json(
         { 
@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error proxying to backend:', error);
+    console.error('Erro ao encaminhar para o backend:', error);
     return NextResponse.json(
-      { error: 'Failed to create payment' },
+      { error: 'Falha ao criar pagamento' },
       { status: 500 }
     );
   }

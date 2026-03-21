@@ -4,12 +4,18 @@ dist/
 .next/
 out/
 build/
+backend/node_modules/
+backend/dist/
 
 # env files
 .env
 .env.local
 .env.production
 .env.development
+backend/.env
+backend/.env.test
+backend/.env.production
+backend/.env.development
 
 # debug
 npm-debug.log*
@@ -24,3 +30,9 @@ Thumbs.db
 coverage/
 
 /generated/prisma
+
+# logs / runtime artifacts
+logs/
+backend/logs/
+backend/deploy-config.json
+backend/uploads/

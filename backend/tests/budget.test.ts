@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import app from '../src/index';
 import Budget from '../src/models/Budget';
 
-describe('Budget API & PDF Generation', () => {
+describe('API de Orcamentos e Geracao de PDF', () => {
   let token: string;
   let tenantId: string;
   let budgetId: string;

@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mercadoPago from '@/lib/mercadoPago';
-import { getAuth, unauthorized } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
-    const auth = await getAuth(req);
-    if (!auth) return unauthorized();
-
     const { paymentId } = await params;
     
     if (!paymentId) {
@@ -19,22 +14,33 @@ export async function GET(
       );
     }
 
-    console.log(`[PIX QR Code] Fetching data for payment: ${paymentId}`);
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    const targetUrl = `${backendUrl}/api/payments/pix/qrcode/${paymentId}`;
 
-    // Obter dados do QR Code diretamente do Mercado Pago usando o SDK v2
-    const pixData = await mercadoPago.getPixQrCode(paymentId);
+    const response = await fetch(targetUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': req.headers.get('authorization') || '',
+      },
+    });
 
-    return NextResponse.json(pixData);
+    const text = await response.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
+    }
+
+    return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    console.error('[PIX QR Code] Error:', error.message || error);
-    
-    const statusCode = error.status || 500;
+    console.error('[PIX QR Code] Erro:', error.message || error);
     return NextResponse.json(
       { 
-        error: 'Erro ao buscar QR Code PIX',
+        error: 'Erro interno do servidor',
         message: error.message || 'Erro desconhecido'
       },
-      { status: statusCode }
+      { status: 500 }
     );
   }
 }

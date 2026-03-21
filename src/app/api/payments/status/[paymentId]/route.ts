@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { paymentId: string } }
+) {
   try {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-    const targetUrl = `${backendUrl}/api/payments/public-key`;
+    const targetUrl = `${backendUrl}/api/payments/status/${params.paymentId}`;
 
     const response = await fetch(targetUrl, {
       method: 'GET',
@@ -22,7 +25,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    console.error('Erro ao obter chave pública:', error);
+    console.error('[Payment Status] Erro:', error?.message || error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
+

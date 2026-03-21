@@ -66,7 +66,9 @@ class MercadoPagoClient {
     const paymentMethods: any = {
       excluded_payment_methods: [],
       excluded_payment_types: [{ id: 'atm' }],
-      installments: 1, // Limitar a 1 parcela (à vista)
+      // Nao forcar 1 parcela: deixar o Mercado Pago decidir conforme cartao/usuario.
+      // Forcar parcelas pode gerar comportamento inesperado no Checkout.
+      installments: 12,
       default_installments: 1
     };
 
@@ -92,14 +94,16 @@ class MercadoPagoClient {
         : orderData.notificationUrl,
       external_reference: orderData.orderId,
       payment_methods: paymentMethods,
-      binary_mode: true, // Modo binário para aprovação imediata
+      // Evita "binary_mode" para reduzir chance de bloqueios/validacoes no Checkout Pro.
+      // Se precisar de aprovacao imediata, reabilite apos validar o fluxo em producao.
+      // binary_mode: true,
       payer: orderData.payer ? {
         email: orderData.payer.email,
         name: orderData.payer.firstName,
         surname: orderData.payer.lastName,
-        phone: orderData.payer.phone ? {
-          number: orderData.payer.phone
-        } : undefined
+        // O Checkout Pro normalmente coleta/valida telefone e CPF no proprio fluxo.
+        // Enviar telefone em formato errado pode causar validacao extra no Checkout.
+        // phone: undefined,
       } : undefined
     };
 

@@ -78,7 +78,7 @@ export const createSubscription = async (req: Request, res: Response) => {
           amount: planConfig.amount,
           description: `Assinatura ${plan} - SORED (5 Dias de Teste)`,
           payerEmail: payerData.email,
-          returnUrl: `${process.env.FRONTEND_URL}/subscription/success`,
+          returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`,
           trialDays: planConfig.trialDays,
           periodType: plan === 'annual' ? 'annual' : 'monthly'
         });
@@ -90,7 +90,7 @@ export const createSubscription = async (req: Request, res: Response) => {
           orderId: `subscription_${subscription._id}`,
           amount: planConfig.amount,
           description: `Assinatura ${plan} - SORED`,
-          returnUrl: `${process.env.FRONTEND_URL}/subscription/success`,
+          returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`,
           notificationUrl
         });
         

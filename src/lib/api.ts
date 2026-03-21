@@ -14,10 +14,10 @@ const getBaseURL = () => {
   
   // Log de diagnóstico aprimorado
   if (typeof window !== 'undefined') {
-    console.group('%c🔍 SORED API Diagnostic', 'color: #6366f1; font-weight: bold;');
-    console.log('Location:', window.location.href);
-    console.log('Mode: Internal API Routes');
-    console.log('Calculated API BaseURL:', finalUrl);
+    console.group('%c🔍 Diagnostico da API SORED', 'color: #6366f1; font-weight: bold;');
+    console.log('Localizacao:', window.location.href);
+    console.log('Modo: Rotas internas da API');
+    console.log('BaseURL calculada da API:', finalUrl);
     console.groupEnd();
   }
 
@@ -37,7 +37,7 @@ api.interceptors.request.use((config) => {
   // Log para depuração em produção
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
     const fullUrl = `${config.baseURL}${config.url}`;
-    console.log(`[API Request] Calling: ${fullUrl}`);
+    console.log(`[API Requisicao] Chamando: ${fullUrl}`);
   }
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -53,14 +53,21 @@ api.interceptors.response.use(
   (error) => {
     const url = error.config?.url || '';
     const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
+    const isPaymentEndpoint =
+      url.includes('/payments/') ||
+      url.includes('/webhooks/') ||
+      url.includes('/subscription') ||
+      url.includes('/subscriptions/plans');
     
     // Log detalhado de erro em produção para o console do navegador
     if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-      console.warn(`[API Error] Request to ${url} failed with status: ${error.response?.status}`);
-      console.log('Headers:', error.response?.headers);
+      console.warn(`[API Erro] Requisicao para ${url} falhou com status: ${error.response?.status}`);
+      console.log('Cabecalhos:', error.response?.headers);
     }
 
-    if (error.response?.status === 401 && !isAuthEndpoint) {
+    // Nao redirecionar automaticamente para /login em endpoints de pagamento,
+    // pois checkout pode ser publico e o redirecionamento atrapalha o fluxo.
+    if (error.response?.status === 401 && !isAuthEndpoint && !isPaymentEndpoint) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');

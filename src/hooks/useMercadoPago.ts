@@ -101,7 +101,8 @@ export const useMercadoPago = () => {
         orderId: paymentData.orderId,
         amount: paymentData.amount,
         description: paymentData.description,
-        returnUrl: `${window.location.origin}/subscription?success=true`,
+        // Evita voltar para uma rota protegida e acabar redirecionando para /login
+        returnUrl: `${window.location.origin}/payment-success`,
         paymentMethod: paymentData.paymentMethod,
         ...(paymentData.payerData ? paymentData.payerData : {})
       });

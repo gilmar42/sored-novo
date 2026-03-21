@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
 
   } catch (error: any) {
-    console.error('[Auth Register] Error:', error.message || error);
+    console.error('[Auth Cadastro] Erro:', error.message || error);
     return NextResponse.json({ 
       message: 'Erro interno do servidor',
       details: error.message 

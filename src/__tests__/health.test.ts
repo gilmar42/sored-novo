@@ -1,14 +1,17 @@
-import { GET } from '../app/api/health/route';
+/** @jest-environment node */
 
-describe('Health API', () => {
-  beforeEach(() => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ status: 'ok' })
-    });
-  });
+describe('API de Saude', () => {
+  it('funciona', async () => {
+    // O endpoint usa Prisma; em teste, mockamos para nao depender de banco.
+    jest.resetModules();
+    jest.doMock('@/lib/prisma', () => ({
+      __esModule: true,
+      default: {
+        $queryRaw: jest.fn().mockResolvedValue(1),
+      },
+    }));
 
-  it('works', async () => {
+    const { GET } = await import('../app/api/health/route');
     const response = await GET();
     const data = await response.json();
 

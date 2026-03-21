@@ -50,6 +50,13 @@ if (process.env.NODE_ENV === 'production') {
   console.log('🧪 Ambiente de desenvolvimento - Mercado Pago opcional');
 }
 
+// Informativo: variaveis opcionais ausentes (nao bloqueia deploy)
+optionalEnvVars.forEach(varName => {
+  if (!process.env[varName]) {
+    console.log(`ℹ️  Variável opcional não configurada: ${varName}`);
+  }
+});
+
 if (hasErrors) {
   console.error('❌ Configure as variáveis de ambiente antes de continuar');
   process.exit(1);

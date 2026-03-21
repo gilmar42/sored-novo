@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const targetUrl = `${backendUrl}/api/payments/checkout`;
     
-    console.log(`[Checkout Proxy] Forwarding to: ${targetUrl}`);
+    console.log(`[Checkout Proxy] Encaminhando para: ${targetUrl}`);
     
     const response = await fetch(targetUrl, {
       method: 'POST',
@@ -19,11 +19,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    console.log(`[Checkout Proxy] Backend response status: ${response.status}`);
+    console.log(`[Checkout Proxy] Status de resposta do backend: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Checkout Proxy] Backend error:`, errorText);
+      console.error(`[Checkout Proxy] Erro do backend:`, errorText);
       
       return NextResponse.json(
         { 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('[Checkout Proxy] Error:', error);
+    console.error('[Checkout Proxy] Erro:', error);
     
     return NextResponse.json(
       { 

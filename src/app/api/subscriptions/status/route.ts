@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('[Subscription Status] Error:', error);
+    console.error('[Status da Assinatura] Erro:', error);
     return NextResponse.json({ error: 'Erro interno do servidor', details: error.message }, { status: 500 });
   }
 }

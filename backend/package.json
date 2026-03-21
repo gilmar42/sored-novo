@@ -7,7 +7,7 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint .",
     "test": "jest --runInBand",
     "validate-mercadopago": "node validate-mercadopago.js",
     "setup-deploy": "node setup-deploy.js",

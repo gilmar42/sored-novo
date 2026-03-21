@@ -6,7 +6,6 @@
  */
 
 require('dotenv').config();
-const mercadopago = require('mercadopago');
 
 console.log('🔍 Validando configurações do Mercado Pago...\n');
 
