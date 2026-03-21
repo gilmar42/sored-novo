@@ -75,7 +75,8 @@ npm run setup-deploy
 
 ### Vercel
 1. Configure as variáveis de ambiente no painel da Vercel
-2. Use o arquivo `deploy/vercel.json` como referência
+2. Use o arquivo `deploy/vercel.json.example` como referência (exemplo)
+   - Observação: este backend é um servidor Express (não serverless). Para Vercel funcionar, é necessário adaptar para funções serverless/Edge. Em VPS/Docker costuma ser mais simples.
 3. Deploy automático via GitHub Actions
 
 ### Docker
