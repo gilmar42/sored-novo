@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ paymentId: string }> }
+  { params }: { params: { paymentId: string } }
 ) {
   try {
-    const { paymentId } = await params;
+    const { paymentId } = params;
     
     if (!paymentId) {
       return NextResponse.json(

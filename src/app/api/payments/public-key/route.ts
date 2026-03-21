@@ -2,15 +2,48 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    // Prefer proxying to the backend when available. If the backend isn't reachable
+    // (common in Vercel-only deploys), fall back to the env public key so the UI can load.
+    const envPublicKey =
+      process.env.MERCADO_PAGO_PUBLIC_KEY ||
+      process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ||
+      '';
+
+    let backendUrl = process.env.BACKEND_URL || '';
+    if (!backendUrl) {
+      // Local dev / VPS default. Use 127.0.0.1 to avoid IPv6/localhost quirks.
+      backendUrl = 'http://127.0.0.1:3001';
+    } else if (!/^https?:\/\//i.test(backendUrl)) {
+      // Guard against misconfigured env like "api.meudominio.com"
+      backendUrl = `https://${backendUrl}`;
+    }
+
     const targetUrl = `${backendUrl}/api/payments/public-key`;
 
-    const response = await fetch(targetUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': request.headers.get('authorization') || '',
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(targetUrl, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          Authorization: request.headers.get('authorization') || '',
+        },
+      });
+    } catch (error: any) {
+      // Backend is down/unreachable: return env fallback if present.
+      if (envPublicKey) {
+        return NextResponse.json({ publicKey: envPublicKey }, { status: 200 });
+      }
+
+      console.error('Erro ao obter chave pública (backend indisponível):', {
+        targetUrl,
+        message: error?.message || String(error),
+      });
+      return NextResponse.json(
+        { error: 'Backend indisponível para obter a chave pública do Mercado Pago' },
+        { status: 503 }
+      );
+    }
 
     const text = await response.text();
     let data: any;
