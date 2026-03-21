@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveBackendUrl } from '../../../_utils/backendUrl';
 
 export async function POST(req: NextRequest) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    let backendUrl: string;
+    try {
+      backendUrl = resolveBackendUrl();
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: 'Backend não configurado', message: error?.message || String(error) },
+        { status: 503 }
+      );
+    }
     const targetUrl = `${backendUrl}/api/payments/pix/create`;
 
     const body = await req.json();

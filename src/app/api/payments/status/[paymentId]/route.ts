@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveBackendUrl } from '../../../_utils/backendUrl';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { paymentId: string } }
 ) {
   try {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    let backendUrl: string;
+    try {
+      backendUrl = resolveBackendUrl();
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: 'Backend não configurado', message: error?.message || String(error) },
+        { status: 503 }
+      );
+    }
     const targetUrl = `${backendUrl}/api/payments/status/${params.paymentId}`;
 
     const response = await fetch(targetUrl, {
@@ -29,4 +38,3 @@ export async function GET(
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
-

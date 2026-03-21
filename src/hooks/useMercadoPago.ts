@@ -27,9 +27,6 @@ export const useMercadoPago = () => {
             publicKey: data.publicKey,
             isConfigured: true
           });
-          
-          // Carregar SDK do Mercado Pago
-          loadMercadoPagoSDK(data.publicKey);
         } else {
           setConfig({
             publicKey: '',
@@ -49,36 +46,6 @@ export const useMercadoPago = () => {
 
     loadConfig();
   }, []);
-
-  const loadMercadoPagoSDK = (publicKey: string) => {
-    if (typeof window === 'undefined') return;
-
-    const initSDK = () => {
-      if (window.MercadoPago && !window.mercadopago) {
-        try {
-          window.mercadopago = new window.MercadoPago(publicKey);
-          console.log('[MercadoPago] SDK instanciado com sucesso');
-        } catch (e) {
-          console.error('[MercadoPago] erro ao instanciar:', e);
-        }
-      }
-    };
-
-    if (!window.MercadoPago) {
-      console.log('[MercadoPago] carregando script v2...');
-      const script = document.createElement('script');
-      script.src = 'https://sdk.mercadopago.com/js/v2';
-      script.async = true;
-      script.onload = () => {
-        console.log('[MercadoPago] script v2 carregado');
-        initSDK();
-      };
-      script.onerror = (e) => console.error('[MercadoPago] erro ao carregar script:', e);
-      document.body.appendChild(script);
-    } else {
-      initSDK();
-    }
-  };
 
   const createPayment = async (paymentData: {
     orderId: string;
@@ -112,7 +79,15 @@ export const useMercadoPago = () => {
       return data;
     } catch (error: any) {
       console.error('Erro ao criar pagamento:', error);
-      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Erro ao processar pagamento');
+      const status = error.response?.status;
+      const backendError =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.response?.data?.details;
+      throw new Error(
+        backendError ||
+          (status ? `Erro ao processar pagamento (HTTP ${status})` : 'Erro ao processar pagamento')
+      );
     }
   };
 
@@ -149,11 +124,3 @@ export const useMercadoPago = () => {
     isReady: config.isConfigured && !loading
   };
 };
-
-// Tipos para o Mercado Pago
-declare global {
-  interface Window {
-    MercadoPago: any;
-    mercadopago: any;
-  }
-}

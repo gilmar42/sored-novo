@@ -3,6 +3,7 @@ import Subscription, { getPlanConfig } from '../models/Subscription';
 import Tenant from '../models/Tenant';
 import logger from '../utils/logger';
 import mercadoPagoClient from '../payments/services/mercadoPagoClient';
+import { buildMercadoPagoWebhookUrl, getFrontendUrl } from '../utils/publicUrls';
 
 export const createSubscription = async (req: Request, res: Response) => {
   try {
@@ -55,7 +56,19 @@ export const createSubscription = async (req: Request, res: Response) => {
 
     // Para planos pagos, criar pagamento no Mercado Pago
     if (mercadoPagoClient && mercadoPagoClient.isConfigured()) {
-      const notificationUrl = `${process.env.BASE_URL}/api/webhooks/mercadopago`;
+      let notificationUrl: string;
+      try {
+        notificationUrl = buildMercadoPagoWebhookUrl();
+      } catch (configError: any) {
+        logger.error('Configuração inválida para webhook do Mercado Pago (assinaturas)', {
+          error: configError?.message || String(configError),
+        });
+        return res.status(503).json({
+          error: 'Configuração de pagamentos inválida',
+          subscription,
+          message: configError?.message || 'BASE_URL inválida',
+        });
+      }
       
       let payment;
       
@@ -78,7 +91,7 @@ export const createSubscription = async (req: Request, res: Response) => {
           amount: planConfig.amount,
           description: `Assinatura ${plan} - SORED (5 Dias de Teste)`,
           payerEmail: payerData.email,
-          returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`,
+          returnUrl: `${getFrontendUrl()}/payment-success`,
           trialDays: planConfig.trialDays,
           periodType: plan === 'annual' ? 'annual' : 'monthly'
         });
@@ -90,7 +103,7 @@ export const createSubscription = async (req: Request, res: Response) => {
           orderId: `subscription_${subscription._id}`,
           amount: planConfig.amount,
           description: `Assinatura ${plan} - SORED`,
-          returnUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`,
+          returnUrl: `${getFrontendUrl()}/payment-success`,
           notificationUrl
         });
         

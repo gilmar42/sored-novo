@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/UI';
-import { CreditCard, QrCode, Check, AlertCircle, Loader2 } from 'lucide-react';
-import { cn } from '@/utils/cn';
+import { CreditCard, QrCode, AlertCircle, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
 
@@ -62,36 +61,62 @@ export default function PaymentProcessor({
     if (onPaymentResultChange) onPaymentResultChange(paymentResult);
   }, [paymentResult, onPaymentResultChange]);
 
+  const normalizePayerData = (data: PaymentData) => {
+    const phoneDigits = data.phone.replace(/\D/g, '');
+    return {
+      email: data.email.trim().toLowerCase(),
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      phoneDigits
+    };
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const nextValue = name === 'phone' ? formatPhone(value) : value;
     setPaymentData(prev => ({
       ...prev,
-      [name]: value
+      [name]: nextValue
     }));
   };
 
-  const validateForm = () => {
+  const validateForm = (): ReturnType<typeof normalizePayerData> | null => {
+    const normalized = normalizePayerData(paymentData);
     const errors = [];
 
-    if (!paymentData.email) errors.push('Email é obrigatório');
-    if (!paymentData.firstName) errors.push('Nome é obrigatório');
-    if (!paymentData.lastName) errors.push('Sobrenome é obrigatório');
-    if (!paymentData.phone) errors.push('Telefone é obrigatório');
+    if (!normalized.email) errors.push('Email é obrigatório');
+    if (!normalized.firstName) errors.push('Nome é obrigatório');
+    if (!normalized.lastName) errors.push('Sobrenome é obrigatório');
+    if (!normalized.phoneDigits) errors.push('Telefone é obrigatório');
 
-    if (paymentData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(paymentData.email)) {
+    if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) {
       errors.push('Email inválido');
     }
 
-    if (paymentData.phone && !/^(\d{10,11})$/.test(paymentData.phone.replace(/\D/g, ''))) {
+    if (normalized.phoneDigits && !/^(\d{10,11})$/.test(normalized.phoneDigits)) {
       errors.push('Telefone deve ter 10 ou 11 dígitos');
     }
 
     if (errors.length > 0) {
       onError(errors.join(', '));
-      return false;
+      return null;
     }
 
-    return true;
+    // Mantém o estado "limpo" para evitar erros por espaços / capitalização
+    if (
+      normalized.email !== paymentData.email ||
+      normalized.firstName !== paymentData.firstName ||
+      normalized.lastName !== paymentData.lastName
+    ) {
+      setPaymentData(prev => ({
+        ...prev,
+        email: normalized.email,
+        firstName: normalized.firstName,
+        lastName: normalized.lastName
+      }));
+    }
+
+    return normalized;
   };
 
   const formatPrice = (price: number) => {
@@ -124,7 +149,8 @@ export default function PaymentProcessor({
   };
 
   const processCreditCardPayment = async () => {
-    if (!validateForm()) return;
+    const normalized = validateForm();
+    if (!normalized) return;
     if (!isReady) {
       onError('Mercado Pago ainda não está pronto. Verifique sua conexão ou configurações.');
       return;
@@ -138,10 +164,10 @@ export default function PaymentProcessor({
         description: `Plano ${plan.name} - ${plan.period}`,
         paymentMethod: 'credit_card',
         payerData: {
-          payerEmail: paymentData.email,
-          payerFirstName: paymentData.firstName,
-          payerLastName: paymentData.lastName,
-          payerPhone: paymentData.phone
+          payerEmail: normalized.email,
+          payerFirstName: normalized.firstName,
+          payerLastName: normalized.lastName,
+          payerPhone: normalized.phoneDigits
         }
       });
       
@@ -159,7 +185,7 @@ export default function PaymentProcessor({
       // Tentar abrir popup (pode ser bloqueado)
       try {
         window.open(result.initPoint, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
-      } catch (e) {
+      } catch {
         console.warn('Popup bloqueado pelo navegador');
       }
     } catch (error: any) {
@@ -170,7 +196,8 @@ export default function PaymentProcessor({
   };
 
   const processPixPayment = async () => {
-    if (!validateForm()) return;
+    const normalized = validateForm();
+    if (!normalized) return;
 
     setLoading(true);
     try {
@@ -180,10 +207,10 @@ export default function PaymentProcessor({
         description: `Plano ${plan.name} - ${plan.period}`,
         paymentMethod: 'pix',
         payerData: {
-          payerEmail: paymentData.email,
-          payerFirstName: paymentData.firstName,
-          payerLastName: paymentData.lastName,
-          payerPhone: paymentData.phone
+          payerEmail: normalized.email,
+          payerFirstName: normalized.firstName,
+          payerLastName: normalized.lastName,
+          payerPhone: normalized.phoneDigits
         }
       });
       
@@ -479,18 +506,13 @@ export default function PaymentProcessor({
       <div className="flex flex-col gap-2">
         <Button
           onClick={paymentMethod === 'credit_card' ? processCreditCardPayment : processPixPayment}
-          disabled={loading || !isReady}
+          disabled={loading}
           className="w-full"
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Processando Pagamento...
-            </>
-          ) : !isReady ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Carregando Mercado Pago...
             </>
           ) : (
             <>

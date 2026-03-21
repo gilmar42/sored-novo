@@ -13,11 +13,13 @@ console.log('🔍 Validando configurações do Mercado Pago...\n');
 const requiredVars = [
   'MERCADO_PAGO_ACCESS_TOKEN',
   'MERCADO_PAGO_PUBLIC_KEY',
-  'BASE_URL'
+  'BASE_URL',
+  'FRONTEND_URL'
 ];
 
 const optionalVars = [
-  'MERCADO_PAGO_WEBHOOK_SECRET'
+  'MERCADO_PAGO_WEBHOOK_SECRET',
+  'MERCADO_PAGO_WEBHOOK_TOLERANCE_MS'
 ];
 
 let allValid = true;
@@ -77,6 +79,18 @@ if (process.env.NODE_ENV === 'production') {
     allValid = false;
   } else {
     console.log('✅ BASE_URL usa HTTPS');
+  }
+
+  if (process.env.BASE_URL && /\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|\/|$)/i.test(process.env.BASE_URL)) {
+    console.log('❌ BASE_URL não pode apontar para localhost em produção');
+    allValid = false;
+  }
+
+  if (!process.env.FRONTEND_URL || !process.env.FRONTEND_URL.startsWith('https://')) {
+    console.log('❌ FRONTEND_URL deve usar HTTPS em produção');
+    allValid = false;
+  } else {
+    console.log('✅ FRONTEND_URL usa HTTPS');
   }
 } else {
   console.log('ℹ️  Ambiente de desenvolvimento - HTTPS não obrigatório');

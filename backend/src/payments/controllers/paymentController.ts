@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import paymentService from '../services/paymentService';
 import mercadoPagoClient from '../services/mercadoPagoClient';
 import logger from '../../utils/logger';
+import { buildMercadoPagoWebhookUrl, getFrontendUrl } from '../../utils/publicUrls';
 
 export const createPayment = async (req: Request, res: Response) => {
   try {
@@ -68,7 +69,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
 
     if (!returnUrl) {
       // Em producao, evite retornar para rotas protegidas (ex: /subscription) para nao cair em /login.
-      returnUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success`;
+      returnUrl = `${getFrontendUrl()}/payment-success`;
     }
 
     logger.info('Creating checkout session with body:', { ...req.body, resolvedReturnUrl: returnUrl });
@@ -77,7 +78,18 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
       return res.status(503).json({ error: 'Mercado Pago não configurado' });
     }
 
-    const notificationUrl = `${process.env.BASE_URL}/api/webhooks/mercadopago`;
+    let notificationUrl: string;
+    try {
+      notificationUrl = buildMercadoPagoWebhookUrl();
+    } catch (configError: any) {
+      logger.error('Configuração inválida para webhook do Mercado Pago', {
+        error: configError?.message || String(configError),
+      });
+      return res.status(503).json({
+        error: 'Configuração de pagamentos inválida',
+        message: configError?.message || 'BASE_URL inválida',
+      });
+    }
     
     const preference = await mercadoPagoClient.createPaymentPreference({
       orderId,
@@ -136,7 +148,18 @@ export const createPixPayment = async (req: Request, res: Response) => {
       return res.status(503).json({ error: 'Mercado Pago não configurado' });
     }
 
-    const notificationUrl = `${process.env.BASE_URL}/api/webhooks/mercadopago`;
+    let notificationUrl: string;
+    try {
+      notificationUrl = buildMercadoPagoWebhookUrl();
+    } catch (configError: any) {
+      logger.error('Configuração inválida para webhook do Mercado Pago (PIX)', {
+        error: configError?.message || String(configError),
+      });
+      return res.status(503).json({
+        error: 'Configuração de pagamentos inválida',
+        message: configError?.message || 'BASE_URL inválida',
+      });
+    }
     
     const payment = await mercadoPagoClient.createPixPayment({
       orderId,

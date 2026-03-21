@@ -65,6 +65,11 @@ Se precisar expor o backend, use HTTPS e ajuste `ALLOWED_ORIGINS`.
 
 Em producao:
 - `FRONTEND_URL` e `BASE_URL` precisam ser HTTPS
-- Webhook: `${BASE_URL}/api/webhooks/mercadopago`
+- Webhook: `${BASE_URL}/api/webhooks/mercadopago` (precisa ser uma URL pública acessível pelo Mercado Pago; pode ser no backend direto ou no Next fazendo proxy)
 - Retorno do checkout aponta para `${FRONTEND_URL}/payment-success`
 
+Configuração recomendada (1 domínio):
+- Nginx roteia `/` → Next (3000) e `/api/*` → Backend (3001) (ver `nginx-hostinger.conf:1`)
+- `FRONTEND_URL=https://app.seudominio.com`
+- `BASE_URL=https://app.seudominio.com` (o Mercado Pago chama o webhook nesse mesmo domínio em `/api/webhooks/mercadopago`)
+- No frontend, `BACKEND_URL=http://127.0.0.1:3001` (proxy interno) ou omita se você chamar o backend direto pelo Nginx em `/api`

@@ -224,6 +224,12 @@ Configure o webhook no painel do Mercado Pago:
 https://seu-dominio.com/api/webhooks/mercadopago
 ```
 
+**Importante (produção):**
+- A URL acima precisa ser **HTTPS** e publicamente acessível pelo Mercado Pago.
+- Configure `BASE_URL` para apontar para a mesma origem que atende `/api/webhooks/mercadopago`.
+- Se `MERCADO_PAGO_WEBHOOK_SECRET` estiver configurado, o backend valida a assinatura via headers `x-signature` e `x-request-id` e rejeita com `401` se for inválida.
+- Opcional: ajuste `MERCADO_PAGO_WEBHOOK_TOLERANCE_MS` (padrão `600000`) para tolerância do timestamp `ts` (anti-replay).
+
 **Eventos:**
 - `payment`
 - `merchant_order`

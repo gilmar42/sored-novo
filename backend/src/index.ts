@@ -21,9 +21,22 @@ import settingsRoutes from './routes/settings';
 import paymentRoutes from './routes/payments';
 import webhookRoutes from './routes/webhooks';
 import subscriptionRoutes from './routes/subscriptions';
+import { getBaseUrl, getFrontendUrl } from './utils/publicUrls';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+if (process.env.NODE_ENV === 'production') {
+  try {
+    getBaseUrl();
+    getFrontendUrl();
+  } catch (error: any) {
+    logger.error('Configuração obrigatória ausente/ inválida para produção', {
+      error: error?.message || String(error),
+    });
+    process.exit(1);
+  }
+}
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

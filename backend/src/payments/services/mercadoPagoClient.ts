@@ -89,9 +89,18 @@ class MercadoPagoClient {
         pending: orderData.returnUrl
       },
       auto_return: orderData.returnUrl?.startsWith('https') ? 'approved' : undefined,
-      notification_url: orderData.notificationUrl?.includes('localhost') || orderData.notificationUrl?.includes('127.0.0.1') 
-        ? 'https://example.com/webhook-dummy' 
-        : orderData.notificationUrl,
+      notification_url: (() => {
+        const url = orderData.notificationUrl || '';
+        const isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0');
+        if (process.env.NODE_ENV === 'production') {
+          if (!url) throw new Error('notificationUrl is required in production');
+          if (!url.startsWith('https://')) throw new Error('notificationUrl must be https:// in production');
+          if (isLocal) throw new Error('notificationUrl cannot be localhost in production');
+          return url;
+        }
+        // Em desenvolvimento, o Mercado Pago não aceita localhost como notification_url.
+        return isLocal ? 'https://example.com/webhook-dummy' : url;
+      })(),
       external_reference: orderData.orderId,
       payment_methods: paymentMethods,
       // Evita "binary_mode" para reduzir chance de bloqueios/validacoes no Checkout Pro.
@@ -142,9 +151,17 @@ class MercadoPagoClient {
       transaction_amount: orderData.amount,
       description: orderData.description,
       external_reference: orderData.orderId,
-      notification_url: orderData.notificationUrl?.includes('localhost') || orderData.notificationUrl?.includes('127.0.0.1') 
-        ? 'https://example.com/webhook-dummy' 
-        : orderData.notificationUrl,
+      notification_url: (() => {
+        const url = orderData.notificationUrl || '';
+        const isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0');
+        if (process.env.NODE_ENV === 'production') {
+          if (!url) throw new Error('notificationUrl is required in production');
+          if (!url.startsWith('https://')) throw new Error('notificationUrl must be https:// in production');
+          if (isLocal) throw new Error('notificationUrl cannot be localhost in production');
+          return url;
+        }
+        return isLocal ? 'https://example.com/webhook-dummy' : url;
+      })(),
       payer: {
         email: orderData.payerEmail,
         first_name: orderData.payerFirstName,

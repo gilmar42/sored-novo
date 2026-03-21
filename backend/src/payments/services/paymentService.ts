@@ -3,6 +3,7 @@ import PaymentEvent, { IPaymentEvent } from '../../models/PaymentEvent';
 import Budget from '../../models/Budget';
 import mercadoPagoClient from './mercadoPagoClient';
 import logger from '../../utils/logger';
+import { buildMercadoPagoWebhookUrl } from '../../utils/publicUrls';
 
 class PaymentService {
   async createPayment(data: {
@@ -17,6 +18,16 @@ class PaymentService {
       throw new Error('Mercado Pago não configurado');
     }
     
+    let notificationUrl: string;
+    try {
+      notificationUrl = buildMercadoPagoWebhookUrl();
+    } catch (error: any) {
+      logger.error('Configuração inválida para webhook do Mercado Pago (createPayment)', {
+        error: error?.message || String(error),
+      });
+      throw new Error(error?.message || 'Configuração inválida para webhook do Mercado Pago');
+    }
+
     // Criar preferência no Mercado Pago
     const preferenceData = {
       items: [{
@@ -26,7 +37,7 @@ class PaymentService {
         currency_id: data.currency,
         unit_price: data.amount
       }],
-      notification_url: `${process.env.BASE_URL}/api/webhooks/mercadopago`,
+      notification_url: notificationUrl,
       external_reference: `order_${data.orderId}`
     };
 

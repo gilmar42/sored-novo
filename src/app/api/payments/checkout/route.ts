@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveBackendUrl } from '../../_utils/backendUrl';
 
 export async function POST(request: NextRequest) {
   try {
-    // URL do backend - usa BACKEND_URL ou fallback para local 3001
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    let backendUrl: string;
+    try {
+      backendUrl = resolveBackendUrl();
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: 'Backend não configurado', message: error?.message || String(error) },
+        { status: 503 }
+      );
+    }
     
     const body = await request.json();
     const targetUrl = `${backendUrl}/api/payments/checkout`;
