@@ -81,8 +81,8 @@ export const useMercadoPago = () => {
       console.error('Erro ao criar pagamento:', error);
       const status = error.response?.status;
       const backendError =
-        error.response?.data?.error ||
         error.response?.data?.message ||
+        error.response?.data?.error ||
         error.response?.data?.details;
       throw new Error(
         backendError ||
