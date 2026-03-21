@@ -6,11 +6,17 @@ const ensureHasScheme = (value: string) => {
 };
 
 export const resolveBackendUrl = () => {
-  const raw = process.env.BACKEND_URL;
+  const raw =
+    process.env.BACKEND_URL ||
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    (process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL.startsWith('http')
+      ? process.env.NEXT_PUBLIC_API_URL
+      : '');
+
   if (!raw) {
     if (process.env.NODE_ENV === 'production') {
       throw new Error(
-        'BACKEND_URL não configurado. Defina essa variável nas Environment Variables do projeto na Vercel e faça um redeploy.'
+        'BACKEND_URL não configurado. Defina BACKEND_URL (recomendado) ou NEXT_PUBLIC_API_URL (URL completa) nas Environment Variables do projeto na Vercel e faça um redeploy.'
       );
     }
     return 'http://127.0.0.1:3001';
