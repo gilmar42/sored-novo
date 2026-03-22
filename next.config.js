@@ -11,10 +11,6 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
-  // Alguns provedores exigem "Output Directory" fixo. Por padrão o Next usa `.next`.
-  // Neste repo usamos `dist` para deploys genéricos, mas no Vercel o builder espera
-  // encontrar a saída em `.next`.
-  distDir: process.env.VERCEL ? '.next' : 'dist',
   images: {
     remotePatterns: [
       {
