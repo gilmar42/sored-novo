@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 import Tenant, { ITenant } from '../models/Tenant';
+import logger from '../utils/logger';
 
 export interface AuthRequest extends Request {
   user?: IUser;
@@ -13,7 +14,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('[AUTH DEBUG] Falha: Header invalido ou nulo', authHeader);
+      logger.debug(`AUTH: header inválido ou nulo (${authHeader || 'null'})`);
       res.status(401).json({ message: 'Token não fornecido ou formato inválido' });
       return;
     }
@@ -26,7 +27,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       const user = await User.findById(decoded.userId).select('+password');
       
       if (!user || !user.isActive) {
-        console.log('[AUTH DEBUG] Falha: Usuario Inativo ou null', decoded.userId);
+        logger.debug(`AUTH: usuário não encontrado/inativo (${decoded.userId})`);
         res.status(401).json({ message: 'Usuário não encontrado ou inativo' });
         return;
       }
@@ -34,7 +35,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       const tenant = await Tenant.findById(decoded.tenantId);
       
       if (!tenant || tenant.status !== 'active') {
-        console.log('[AUTH DEBUG] Falha: Tenant inativo ou null', decoded.tenantId);
+        logger.debug(`AUTH: tenant não encontrado/inativo (${decoded.tenantId})`);
         res.status(401).json({ message: 'Empresa não encontrada ou inativa' });
         return;
       }
@@ -49,7 +50,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       } else if (jwtError instanceof jwt.TokenExpiredError) {
         res.status(401).json({ message: 'Token expirado' });
       } else {
-        console.error('[AUTH DEBUG] JWT Error genérico', jwtError);
+        logger.error('AUTH: erro inesperado ao validar JWT', jwtError as any);
         res.status(500).json({ message: 'Erro na autenticação' });
       }
     }

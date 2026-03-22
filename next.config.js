@@ -11,6 +11,9 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Alguns provedores exigem "Output Directory" fixo. Por padrão o Next usa `.next`,
+  // mas aqui mantemos um diretório mais comum em plataformas genéricas.
+  distDir: 'dist',
   images: {
     remotePatterns: [
       {
