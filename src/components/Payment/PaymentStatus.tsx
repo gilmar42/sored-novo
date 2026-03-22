@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/UI';
 import { Check, X, Clock, AlertCircle, Loader2, RefreshCw, CreditCard, QrCode } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import api from '@/lib/api';
+import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
 
 interface PaymentStatusProps {
   paymentId: string;
@@ -25,8 +25,13 @@ export default function PaymentStatus({ paymentId, onPaymentConfirmed, onPayment
 
   const fetchPaymentStatus = async () => {
     try {
+      const configurationError = getPaymentApiConfigurationError();
+      if (configurationError) {
+        throw new Error(configurationError);
+      }
+
       // Verificar status do pagamento usando o endpoint genérico
-      const response = await api.get(`payments/status/${paymentId}`);
+      const response = await paymentApi.get(`payments/status/${paymentId}`);
       const data = response.data;
       
       // Mapear status do Mercado Pago (se retornou objeto do MP)

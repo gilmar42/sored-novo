@@ -6,6 +6,7 @@ import { Check, AlertCircle, CreditCard, QrCode, ArrowLeft, Lock, Star } from 'l
 import Link from 'next/link';
 import { cn } from '@/utils/cn';
 import api from '@/lib/api';
+import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
 
 interface Plan {
   id: string;
@@ -93,7 +94,12 @@ export default function ProtectedSubscriptionPlans({ onPlanSelect, currentPlan }
       // Se for PIX, obter QR Code
       if (paymentMethod === 'pix' && result.payment && result.payment.id) {
         try {
-          const qrResponse = await api.get(`payments/pix/qrcode/${result.payment.id}`);
+          const configurationError = getPaymentApiConfigurationError();
+          if (configurationError) {
+            throw new Error(configurationError);
+          }
+
+          const qrResponse = await paymentApi.get(`payments/pix/qrcode/${result.payment.id}`);
           setPaymentData((prev: any) => ({ ...prev, qrData: qrResponse.data }));
         } catch (qrError: any) {
           console.error('Erro ao obter QR Code:', qrError);

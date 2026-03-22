@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import api from '@/lib/api';
+import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
 
 interface MercadoPagoConfig {
   publicKey: string;
@@ -30,11 +30,16 @@ export const useMercadoPago = () => {
     };
   }) => {
     try {
+      const configurationError = getPaymentApiConfigurationError();
+      if (configurationError) {
+        throw new Error(configurationError);
+      }
+
       const endpoint = paymentData.paymentMethod === 'pix' 
         ? 'payments/pix/create' 
         : 'payments/checkout';
 
-      const response = await api.post(endpoint, {
+      const response = await paymentApi.post(endpoint, {
         orderId: paymentData.orderId,
         amount: paymentData.amount,
         description: paymentData.description,
@@ -63,7 +68,12 @@ export const useMercadoPago = () => {
 
   const getPixQrCode = async (paymentId: string) => {
     try {
-      const response = await api.get(`payments/pix/qrcode/${paymentId}`);
+      const configurationError = getPaymentApiConfigurationError();
+      if (configurationError) {
+        throw new Error(configurationError);
+      }
+
+      const response = await paymentApi.get(`payments/pix/qrcode/${paymentId}`);
       const data = response.data;
 
       return data;
@@ -75,7 +85,12 @@ export const useMercadoPago = () => {
 
   const getPaymentStatus = async (paymentId: string) => {
     try {
-      const response = await api.get(`payments/status/${paymentId}`);
+      const configurationError = getPaymentApiConfigurationError();
+      if (configurationError) {
+        throw new Error(configurationError);
+      }
+
+      const response = await paymentApi.get(`payments/status/${paymentId}`);
       const data = response.data;
 
       return data;

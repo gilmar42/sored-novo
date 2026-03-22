@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/UI';
 import { CreditCard, QrCode, AlertCircle, Loader2 } from 'lucide-react';
-import api from '@/lib/api';
+import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
 
 interface PaymentData {
@@ -289,8 +289,14 @@ export default function PaymentProcessor({
           <div className="flex gap-2">
             <Button
               onClick={() => {
+                const configurationError = getPaymentApiConfigurationError();
+                if (configurationError) {
+                  onError(configurationError);
+                  return;
+                }
+
                 // Verificar status do pagamento
-                api.get(`payments/pix/status/${paymentResult.paymentId}`)
+                paymentApi.get(`payments/pix/status/${paymentResult.paymentId}`)
                   .then(response => {
                     const data = response.data;
                     if (data.status === 'approved') {
