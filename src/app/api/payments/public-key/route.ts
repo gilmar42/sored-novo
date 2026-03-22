@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveBackendUrl } from '../../_utils/backendUrl';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,13 +10,18 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ||
       '';
 
-    let backendUrl = process.env.BACKEND_URL || '';
-    if (!backendUrl) {
-      // Local dev / VPS default. Use 127.0.0.1 to avoid IPv6/localhost quirks.
-      backendUrl = 'http://127.0.0.1:3001';
-    } else if (!/^https?:\/\//i.test(backendUrl)) {
-      // Guard against misconfigured env like "api.meudominio.com"
-      backendUrl = `https://${backendUrl}`;
+    let backendUrl: string;
+    try {
+      backendUrl = resolveBackendUrl();
+    } catch (error: any) {
+      if (envPublicKey) {
+        return NextResponse.json({ publicKey: envPublicKey }, { status: 200 });
+      }
+
+      return NextResponse.json(
+        { error: 'Backend não configurado', message: error?.message || String(error) },
+        { status: 503 }
+      );
     }
 
     const targetUrl = `${backendUrl}/api/payments/public-key`;

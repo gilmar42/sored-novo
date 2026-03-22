@@ -17,7 +17,8 @@ Frontend (raiz) - baseie em `.env.example`:
 - `DATABASE_URL` (PostgreSQL para Prisma)
 - `JWT_SECRET`
 - `NEXT_PUBLIC_APP_URL` (URL publica do site)
-- `BACKEND_URL` (URL interna para o backend; em VPS normalmente `http://localhost:3001`)
+- `BACKEND_URL` (origem do backend sem `/api`; em VPS normalmente `http://localhost:3001`, em deploy separado `https://api.seudominio.com`)
+- `NEXT_PUBLIC_API_URL` (opcional; URL completa da API com `/api`, ex.: `https://api.seudominio.com/api`, util para chamadas diretas do navegador)
 
 Backend (`backend/.env`) - baseie em `backend/.env.example`:
 - `MONGODB_URI`
@@ -80,3 +81,8 @@ Configuração recomendada (1 domínio):
 - `FRONTEND_URL=https://app.seudominio.com`
 - `BASE_URL=https://app.seudominio.com` (o Mercado Pago chama o webhook nesse mesmo domínio em `/api/webhooks/mercadopago`)
 - No frontend, `BACKEND_URL=http://127.0.0.1:3001` (proxy interno) ou omita se você chamar o backend direto pelo Nginx em `/api`
+
+Configuração recomendada (Vercel + backend externo):
+- `BACKEND_URL=https://api.seudominio.com`
+- `NEXT_PUBLIC_API_URL=https://api.seudominio.com/api`
+- Nao use apenas `NEXT_PUBLIC_API_URL=/api` nesse cenário, porque as rotas `/api/*` do Next executam no Vercel e precisam saber qual é a origem real do backend.
