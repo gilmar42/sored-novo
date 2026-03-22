@@ -4,6 +4,12 @@ Este repo tem 2 apps:
 - Frontend: Next.js (porta 3000)
 - Backend: Express/Node (porta 3001)
 
+## ObservaÃ§Ã£o (plataformas com "Entry File" / "Output Directory")
+
+Alguns provedores pedem esses campos mesmo para frameworks.
+- Frontend (Next.js): nÃ£o use `server.js` como entry file; deixe em branco/`null` e use `npm run build` + `npm run start`.
+- Se o provedor exigir um "Output Directory" para o frontend, use `./.next` (SSR) ou `out` apenas se vocÃª estiver usando export estÃ¡tico.
+
 ## 1) Variaveis de ambiente
 
 Frontend (raiz) - baseie em `.env.example`:

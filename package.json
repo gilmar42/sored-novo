@@ -2,7 +2,6 @@
   "name": "sored-novo",
   "version": "1.0.0",
   "description": "SORED - Sistema de Orçamento Rápido Industrial",
-  "main": "index.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
