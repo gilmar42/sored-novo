@@ -8,6 +8,7 @@ Este repo tem 2 apps:
 
 Alguns provedores pedem esses campos mesmo para frameworks.
 - Frontend (Next.js): nÃ£o use `server.js` como entry file; deixe em branco/`null` e use `npm run build` + `npm run start`.
+- Vercel: deixe "Output Directory" vazio (framework Next.js). Este repo usa `.next` automaticamente quando `VERCEL=1`.
 - Se o provedor exigir um "Output Directory" para o frontend, use `./dist` (este repo configura `distDir` no Next) ou `out` apenas se vocÃª estiver usando export estÃ¡tico.
 
 ## 1) Variaveis de ambiente
