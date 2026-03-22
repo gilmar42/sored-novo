@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveBackendUrl } from '../../../../_utils/backendUrl';
+import { canHandlePaymentsLocally, getLocalPixQrCode } from '../../../_utils/localMercadoPago';
 
 export async function GET(
   req: NextRequest,
@@ -13,6 +14,11 @@ export async function GET(
         { error: 'ID do pagamento não fornecido' },
         { status: 400 }
       );
+    }
+
+    if (canHandlePaymentsLocally()) {
+      const qrCode = await getLocalPixQrCode(paymentId);
+      return NextResponse.json(qrCode, { status: 200 });
     }
 
     let backendUrl: string;

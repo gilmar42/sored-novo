@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveBackendUrl } from '../../_utils/backendUrl';
+import { canHandlePaymentsLocally, getMercadoPagoPublicKey } from '../_utils/localMercadoPago';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,6 +10,10 @@ export async function GET(request: NextRequest) {
       process.env.MERCADO_PAGO_PUBLIC_KEY ||
       process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ||
       '';
+
+    if (canHandlePaymentsLocally()) {
+      return NextResponse.json({ publicKey: getMercadoPagoPublicKey() }, { status: 200 });
+    }
 
     let backendUrl: string;
     try {

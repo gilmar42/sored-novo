@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveBackendUrl } from '../../../_utils/backendUrl';
+import { canHandlePaymentsLocally, getLocalPaymentStatus } from '../../_utils/localMercadoPago';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { paymentId: string } }
 ) {
   try {
+    if (canHandlePaymentsLocally()) {
+      const payment = await getLocalPaymentStatus(params.paymentId);
+      return NextResponse.json(payment, { status: 200 });
+    }
+
     let backendUrl: string;
     try {
       backendUrl = resolveBackendUrl();

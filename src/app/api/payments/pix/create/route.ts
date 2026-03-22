@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveBackendUrl } from '../../../_utils/backendUrl';
+import { canHandlePaymentsLocally, createLocalPixPayment } from '../../_utils/localMercadoPago';
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+
+    if (canHandlePaymentsLocally()) {
+      const result = await createLocalPixPayment(body);
+      return NextResponse.json(result, { status: 200 });
+    }
+
     let backendUrl: string;
     try {
       backendUrl = resolveBackendUrl();
@@ -14,7 +22,6 @@ export async function POST(req: NextRequest) {
     }
     const targetUrl = `${backendUrl}/api/payments/pix/create`;
 
-    const body = await req.json();
     const response = await fetch(targetUrl, {
       method: 'POST',
       headers: {

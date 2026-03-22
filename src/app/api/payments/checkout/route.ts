@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveBackendUrl } from '../../_utils/backendUrl';
+import { canHandlePaymentsLocally, createLocalCheckout } from '../_utils/localMercadoPago';
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json();
+
+    if (canHandlePaymentsLocally()) {
+      const result = await createLocalCheckout(body);
+      return NextResponse.json(result, { status: 200 });
+    }
+
     let backendUrl: string;
     try {
       backendUrl = resolveBackendUrl();
@@ -13,7 +21,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const body = await request.json();
     const targetUrl = `${backendUrl}/api/payments/checkout`;
     
     console.log(`[Checkout Proxy] Encaminhando para: ${targetUrl}`);
