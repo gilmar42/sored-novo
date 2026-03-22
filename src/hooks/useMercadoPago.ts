@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import api from '@/lib/api';
 
@@ -10,42 +10,12 @@ interface MercadoPagoConfig {
 }
 
 export const useMercadoPago = () => {
-  const [config, setConfig] = useState<MercadoPagoConfig>({
-    publicKey: '',
-    isConfigured: false
+  const [config] = useState<MercadoPagoConfig>({
+    publicKey: process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY || '',
+    // O fluxo atual usa checkout redirect e PIX server-side.
+    // A chave pública não é necessária para liberar a criação do pagamento.
+    isConfigured: true
   });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        const response = await api.get('payments/public-key');
-        const data = response.data;
-        
-        if (data.publicKey) {
-          setConfig({
-            publicKey: data.publicKey,
-            isConfigured: true
-          });
-        } else {
-          setConfig({
-            publicKey: '',
-            isConfigured: false
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao carregar configuração do Mercado Pago:', error);
-        setConfig({
-          publicKey: '',
-          isConfigured: false
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadConfig();
-  }, []);
 
   const createPayment = async (paymentData: {
     orderId: string;
@@ -117,10 +87,10 @@ export const useMercadoPago = () => {
 
   return {
     config,
-    loading,
+    loading: false,
     createPayment,
     getPixQrCode,
     getPaymentStatus,
-    isReady: config.isConfigured && !loading
+    isReady: true
   };
 };
