@@ -1,13 +1,11 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { Card, Button, Input, Modal } from '@/components/UI';
 import {
   Plus, Search, FileText, Download, Eye, Pencil, Trash2,
-  User, Tag, Package, Clock, Calculator, MessageCircle, ChevronDown, X
+  Tag, Package, Clock, Calculator, MessageCircle, ChevronDown, X
 } from 'lucide-react';
 import { formatCurrency, formatDate, cn } from '@/utils/cn';
 

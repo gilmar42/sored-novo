@@ -1,7 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/utils/cn'
-import Sidebar from '@/components/Sidebar'
 import DashboardProvider from '@/components/DashboardProvider'
 
 const inter = Inter({ 

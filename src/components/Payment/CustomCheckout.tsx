@@ -113,6 +113,8 @@ export default function CustomCheckout({ plan, onSuccess, onError, onCancel }: C
         timestamp: new Date().toISOString()
       }));
 
+      onSuccess(paymentData);
+
       // Redirecionar diretamente para página de sucesso
       window.location.href = '/payment-success';
       

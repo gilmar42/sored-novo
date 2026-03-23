@@ -4,10 +4,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { Card, Button } from '@/components/UI';
 import { Check, AlertCircle, CreditCard, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 function DemoPaymentContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);

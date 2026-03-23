@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/UI';
-import { Check, X, Clock, AlertCircle, Loader2, RefreshCw, CreditCard, QrCode } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, Loader2, RefreshCw, CreditCard } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
 

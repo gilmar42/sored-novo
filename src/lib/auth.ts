@@ -24,7 +24,7 @@ export async function getAuth(req: NextRequest): Promise<AuthContext | null> {
       user: { _id: decoded.userId, id: decoded.userId, isActive: true }, 
       tenant: { _id: decoded.tenantId, id: decoded.tenantId, status: 'active' } 
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }

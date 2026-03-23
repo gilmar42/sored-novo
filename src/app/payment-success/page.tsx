@@ -31,7 +31,7 @@ export default function PaymentSuccessPage() {
         try {
           const payment = JSON.parse(savedPayment);
           setPaymentData(payment);
-        } catch (error) {
+        } catch {
           localStorage.removeItem('lastPayment');
         }
       }

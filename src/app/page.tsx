@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, Button } from '@/components/UI';
-import { Package, Clock, Calculator, ArrowRight, ShieldCheck, Zap, Check, Star, X } from 'lucide-react';
+import { Package, Clock, Calculator, ArrowRight, Zap, Check, X } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/utils/cn';
 import SubscriptionPlans from '@/components/SubscriptionPlans';
@@ -12,7 +12,7 @@ export default function Home() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
-  const handlePlanSelect = (plan: any, method: string) => {
+  const handlePlanSelect = (plan: any, _method: string) => {
     setSelectedPlan(plan);
     setShowPaymentModal(true);
   };

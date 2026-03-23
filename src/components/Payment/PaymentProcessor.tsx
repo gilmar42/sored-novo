@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/UI';
 import { CreditCard, QrCode, AlertCircle, Loader2 } from 'lucide-react';
 import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
@@ -250,9 +251,12 @@ export default function PaymentProcessor({
         <div className="space-y-4">
           <div className="flex justify-center">
             {paymentResult.qrCode && (
-              <img 
+              <Image
                 src={`data:image/png;base64,${paymentResult.qrCode}`}
                 alt="QR Code PIX"
+                width={192}
+                height={192}
+                unoptimized
                 className="w-48 h-48 bg-white p-2 rounded"
               />
             )}

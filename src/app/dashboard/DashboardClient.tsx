@@ -1,0 +1,176 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import api from '@/lib/api';
+import { Card } from '@/components/UI';
+import { 
+  Users, 
+  Package, 
+  FileText, 
+  TrendingUp, 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
+import { formatCurrency, cn } from '@/utils/cn';
+
+interface DashboardStats {
+  overview: {
+    totalClients: number;
+    totalMaterials: number;
+    totalLabor: number;
+    totalMachines: number;
+    totalBudgets: number;
+  };
+  budgetStats: {
+    totalValue: number;
+    draftCount: number;
+    sentCount: number;
+    approvedCount: number;
+    rejectedCount: number;
+    avgBudgetValue: number;
+  };
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('dashboard/stats');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  const statCards = [
+    { 
+      title: 'Total Orçado', 
+      value: formatCurrency(stats?.budgetStats.totalValue || 0), 
+      icon: TrendingUp, 
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-50',
+      trend: '+12.5%',
+      isPositive: true
+    },
+    { 
+      title: 'Orçamentos', 
+      value: stats?.overview.totalBudgets || 0, 
+      icon: FileText, 
+      color: 'text-indigo-600', 
+      bg: 'bg-indigo-50',
+      trend: '+5',
+      isPositive: true
+    },
+    { 
+      title: 'Clientes', 
+      value: stats?.overview.totalClients || 0, 
+      icon: Users, 
+      color: 'text-blue-600', 
+      bg: 'bg-blue-50',
+      trend: '+2',
+      isPositive: true
+    },
+    { 
+      title: 'Materiais', 
+      value: stats?.overview.totalMaterials || 0, 
+      icon: Package, 
+      color: 'text-orange-600', 
+      bg: 'bg-orange-50',
+      trend: '+8',
+      isPositive: true
+    },
+  ];
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Visão Geral</h1>
+        <p className="text-muted-foreground text-sm">Bem-vindo ao seu painel de controle industrial.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((card, i) => (
+          <Card key={i} className="relative overflow-hidden group border-none bg-slate-900/40 backdrop-blur-sm">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-400 mb-1">{card.title}</p>
+                <h3 className="text-2xl font-bold">{card.value}</h3>
+                <div className={cn(
+                  "mt-2 flex items-center text-xs font-semibold px-2 py-0.5 rounded-full",
+                  card.isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                )}>
+                  {card.isPositive ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
+                  {card.trend}
+                </div>
+              </div>
+              <div className={cn("p-3 rounded-xl transition-transform group-hover:scale-110 duration-200 bg-slate-800/50")}>
+                <card.icon className={cn("w-6 h-6", card.color)} />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Card title="Status dos Orçamentos" className="lg:col-span-1">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
+              <div className="flex items-center">
+                <div className="p-2 rounded-lg bg-green-500/10 text-green-400 mr-3">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <span className="text-sm font-medium">Aprovados</span>
+              </div>
+              <span className="text-lg font-bold">{stats?.budgetStats.approvedCount || 0}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
+              <div className="flex items-center">
+                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 mr-3">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <span className="text-sm font-medium">Enviados</span>
+              </div>
+              <span className="text-lg font-bold">{stats?.budgetStats.sentCount || 0}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 border border-slate-800/50">
+              <div className="flex items-center">
+                <div className="p-2 rounded-lg bg-slate-700/50 text-slate-300 mr-3">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <span className="text-sm font-medium">Rascunhos</span>
+              </div>
+              <span className="text-lg font-bold">{stats?.budgetStats.draftCount || 0}</span>
+            </div>
+          </div>
+        </Card>
+
+        <Card title="Valor Médio por Proposta" className="lg:col-span-2">
+          <div className="h-[200px] flex items-center justify-center flex-col text-slate-400">
+            <TrendingUp className="w-12 h-12 mb-4 opacity-20" />
+            <p className="text-3xl font-bold text-indigo-600">{formatCurrency(stats?.budgetStats.avgBudgetValue || 0)}</p>
+            <p className="text-sm">Ticket médio das propostas comerciais</p>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}

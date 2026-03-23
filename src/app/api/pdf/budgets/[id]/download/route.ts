@@ -32,7 +32,7 @@ export async function GET(
       number: budget.number
     }, { status: 410 }); // GONE - o recurso não reside mais no servidor de forma estática
 
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ message: 'Erro ao processar download do PDF' }, { status: 500 });
   }
 }
