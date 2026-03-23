@@ -1,7 +1,12 @@
 import MachinesClient from './MachinesClient';
+import DashboardProvider from '@/components/DashboardProvider';
 
 export const dynamic = 'force-dynamic';
 
 export default function Page() {
-  return <MachinesClient />;
+  return (
+    <DashboardProvider>
+      <MachinesClient />
+    </DashboardProvider>
+  );
 }

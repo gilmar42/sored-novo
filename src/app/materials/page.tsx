@@ -1,7 +1,12 @@
 import MaterialsClient from './MaterialsClient';
+import DashboardProvider from '@/components/DashboardProvider';
 
 export const dynamic = 'force-dynamic';
 
 export default function Page() {
-  return <MaterialsClient />;
+  return (
+    <DashboardProvider>
+      <MaterialsClient />
+    </DashboardProvider>
+  );
 }

@@ -1,25 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-
-const publicRoutes = new Set(['/', '/login', '/register', '/payment-success', '/demo-payment']);
 
 export default function DashboardProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [pathname, setPathname] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPathname(window.location.pathname);
-  }, []);
-
-  if (pathname === null || publicRoutes.has(pathname)) {
-    return <>{children}</>;
-  }
-
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />

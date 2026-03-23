@@ -1,7 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { cn } from '@/utils/cn'
-import DashboardProvider from '@/components/DashboardProvider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -22,9 +21,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={cn('h-full', inter.variable)} suppressHydrationWarning>
       <body className={`${inter.className} h-full font-sans`}>
-        <DashboardProvider>
-          {children}
-        </DashboardProvider>
+        {children}
       </body>
     </html>
   )
