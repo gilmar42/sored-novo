@@ -1,20 +1,22 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { usePathname } from 'next/navigation';
 
-export default function DashboardLayout({
+const publicRoutes = new Set(['/', '/login', '/register', '/payment-success', '/demo-payment']);
+
+export default function DashboardProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  
-  // Rotas que não devem ter a sidebar
-  const publicRoutes = ['/', '/login', '/register'];
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const [pathname, setPathname] = useState<string | null>(null);
 
-  if (isPublicRoute) {
+  useEffect(() => {
+    setPathname(window.location.pathname);
+  }, []);
+
+  if (pathname === null || publicRoutes.has(pathname)) {
     return <>{children}</>;
   }
 
