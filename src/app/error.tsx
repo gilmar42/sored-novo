@@ -1,6 +1,5 @@
+/* eslint-disable @next/next/no-html-link-for-pages */
 'use client';
-
-import Link from 'next/link';
 
 export default function ErrorPage({
   reset,
@@ -21,17 +20,18 @@ export default function ErrorPage({
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <button
+            type="button"
             onClick={() => reset()}
             className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500"
           >
             Tentar novamente
           </button>
-          <Link
+          <a
             href="/"
             className="inline-flex items-center justify-center rounded-lg border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-800"
           >
             Ir para o início
-          </Link>
+          </a>
         </div>
       </main>
     </div>

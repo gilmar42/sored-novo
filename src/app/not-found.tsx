@@ -1,5 +1,4 @@
-import Link from 'next/link';
-
+/* eslint-disable @next/next/no-html-link-for-pages */
 export default function NotFoundPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
@@ -11,12 +10,12 @@ export default function NotFoundPage() {
         <p className="mt-3 text-sm text-slate-400">
           A rota solicitada não existe ou foi movida.
         </p>
-        <Link
+        <a
           href="/"
           className="mt-6 inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500"
         >
           Voltar para o início
-        </Link>
+        </a>
       </main>
     </div>
   );
