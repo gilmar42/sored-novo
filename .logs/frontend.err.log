@@ -1,0 +1,33 @@
+[PIX Create] Erro ao criar PIX: fetch failed
+[PIX Create] Erro ao criar PIX: fetch failed
+Error: Route "/api/payments/pix/qrcode/[paymentId]" used `params.paymentId`. `params` is a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at GET (src\app\api\payments\pix\qrcode\[paymentId]\route.ts:10:13)
+   8 |   ) {
+   9 |   try {
+> 10 |     const { paymentId } = params;
+     |             ^
+  11 |     
+  12 |     if (!paymentId) {
+  13 |       return NextResponse.json(
+[browser] Erro ao obter QR Code: AxiosError: Request failed with status code 400
+    at AxiosError (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_0a7_-xn._.js:8052:9)
+    at settle (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_0a7_-xn._.js:9294:16)
+    at onloadend (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_0a7_-xn._.js:9810:174)
+[browser] Erro no pagamento: ID do pagamento não fornecido 
+    at processPixPayment (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1241:20) (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1241:20)
+[Auth Cadastro] Erro: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].user.findUnique()` invocation in
+C:\Users\gilmar dutra\Documents\sored-novo-main\.next\dev\server\chunks\[root-of-the-server]__02_3fph._.js:113:171
+
+  110 const normalizedTenantEmail = tenantEmail?.trim().toLowerCase();
+  111 const normalizedUserEmail = userEmail?.trim().toLowerCase();
+  112 // Validar se o usuário já existe
+→ 113 const existingUser = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].user.findUnique(
+error: Error validating datasource `db`: the URL must start with the protocol `mysql://`.
+  -->  schema.prisma:12
+   | 
+11 |   provider = "mysql"
+12 |   url      = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1

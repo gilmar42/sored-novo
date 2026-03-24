@@ -5,6 +5,15 @@ import prisma from '@/lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
+const getPrismaConfigError = (error: any) => {
+  const message = error?.message || String(error);
+  if (message.includes('Error validating datasource `db`')) {
+    return 'DATABASE_URL inválido para o Prisma. Configure uma URL MySQL válida antes de usar login/cadastro local.';
+  }
+
+  return null;
+};
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
@@ -48,6 +57,8 @@ export async function POST(req: NextRequest) {
       data: { lastLogin: new Date() }
     }).catch(err => console.error('Erro ao atualizar lastLogin:', err));
 
+    const permissions = Array.isArray(user.permissions) ? user.permissions : [];
+
     return NextResponse.json({
       token,
       user: {
@@ -55,7 +66,7 @@ export async function POST(req: NextRequest) {
         name: user.name,
         email: user.email,
         role: user.role,
-        permissions: (user.permissions as string[]) || []
+        permissions
       },
       tenant: {
         id: user.tenant.id,
@@ -68,6 +79,10 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('[Auth Login] Erro:', error);
+    const configError = getPrismaConfigError(error);
+    if (configError) {
+      return NextResponse.json({ message: configError }, { status: 503 });
+    }
     return NextResponse.json({ message: 'Erro interno do servidor' }, { status: 500 });
   }
 }

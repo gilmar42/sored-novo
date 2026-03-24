@@ -1,41 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveBackendUrl } from '../../_utils/backendUrl';
+import { canHandlePaymentsLocally, processLocalWebhook } from '../../payments/_utils/localMercadoPago';
 
 export async function POST(req: NextRequest) {
-  let backendUrl: string;
-  try {
-    backendUrl = resolveBackendUrl();
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: 'Backend não configurado', message: error?.message || String(error) },
-      { status: 503 }
-    );
-  }
-
   const body = await req.text();
-  const targetUrl = `${backendUrl}/api/webhooks/mercadopago${req.nextUrl.search}`;
-
-  const response = await fetch(targetUrl, {
-    method: 'POST',
-    cache: 'no-store',
-    headers: {
-      'Content-Type': req.headers.get('content-type') || 'application/json',
-      'x-signature': req.headers.get('x-signature') || '',
-      'x-request-id': req.headers.get('x-request-id') || '',
-      'user-agent': req.headers.get('user-agent') || '',
-    },
-    body,
-  });
-
-  const text = await response.text();
   try {
-    const data = text ? JSON.parse(text) : null;
-    return NextResponse.json(data, { status: response.status });
-  } catch {
-    return new NextResponse(text, {
-      status: response.status,
-      headers: { 'Content-Type': response.headers.get('content-type') || 'text/plain' },
+    if (canHandlePaymentsLocally()) {
+      const data = body ? JSON.parse(body) : null;
+      await processLocalWebhook(data);
+      return NextResponse.json({ received: true, mode: 'local' }, { status: 200 });
+    }
+
+    let backendUrl: string;
+    try {
+      backendUrl = resolveBackendUrl();
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: 'Backend não configurado', message: error?.message || String(error) },
+        { status: 503 }
+      );
+    }
+
+    const targetUrl = `${backendUrl}/api/webhooks/mercadopago${req.nextUrl.search}`;
+
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': req.headers.get('content-type') || 'application/json',
+        'x-signature': req.headers.get('x-signature') || '',
+        'x-request-id': req.headers.get('x-request-id') || '',
+        'user-agent': req.headers.get('user-agent') || '',
+      },
+      body,
     });
+
+    const text = await response.text();
+    try {
+      const data = text ? JSON.parse(text) : null;
+      return NextResponse.json(data, { status: response.status });
+    } catch {
+      return new NextResponse(text, {
+        status: response.status,
+        headers: { 'Content-Type': response.headers.get('content-type') || 'text/plain' },
+      });
+    }
+  } catch (error: any) {
+    console.error('[Webhook MP] Erro:', error?.message || error);
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
 
@@ -49,4 +61,3 @@ export async function OPTIONS() {
     },
   });
 }
-

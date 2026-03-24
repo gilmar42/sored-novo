@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { Card, Button } from '@/components/UI';
-import { Package, Clock, Calculator, ArrowRight, Zap, Check, X } from 'lucide-react';
-import Link from 'next/link';
+import { Package, Clock, Calculator, Zap, Check, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import SubscriptionPlans from '@/components/SubscriptionPlans';
 import PaymentProcessor from '@/components/Payment/PaymentProcessor';
@@ -54,15 +53,6 @@ export default function HomeClient() {
           <p className="text-xl md:text-2xl text-muted-foreground mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000">
             Sistema de Orçamento Rápido Industrial. Aumente a precisão e velocidade das suas propostas comerciais.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
-            <Link href="/subscription" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full h-14 px-8 premium-gradient border-none group">
-                Ver Planos e Preços
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">

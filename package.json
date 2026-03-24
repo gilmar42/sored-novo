@@ -5,7 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:backend": "npm --prefix backend run build",
+    "build:hostinger": "npm run build && npm run build:backend",
     "start": "next start",
+    "hostinger:install": "npm ci && npm --prefix backend ci",
+    "hostinger:start": "pm2 start ecosystem.config.cjs --update-env",
+    "hostinger:reload": "pm2 reload ecosystem.config.cjs --update-env",
     "lint": "eslint .",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",

@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
     const isActive = subscription.status === 'active' && !isExpired;
     const isInTrial = subscription.status === 'trial' && !isExpired;
     const daysLeft = differenceInDays(subscription.endDate, now);
+    const features = Array.isArray(subscription.features) ? subscription.features : [];
 
     return NextResponse.json({
       hasSubscription: true,
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
       isActive,
       isInTrial,
       daysLeft: daysLeft > 0 ? daysLeft : 0,
-      features: subscription.features
+      features
     });
 
   } catch (error: any) {

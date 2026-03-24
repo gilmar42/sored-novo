@@ -7,8 +7,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     if (canHandlePaymentsLocally()) {
-      const result = await createLocalPixPayment(body);
-      return NextResponse.json(result, { status: 200 });
+      try {
+        const result = await createLocalPixPayment(body);
+        return NextResponse.json(result, { status: 200 });
+      } catch (error: any) {
+        console.warn('[PIX Create] Falha no processamento local, usando backend configurado:', error?.message || error);
+      }
     }
 
     let backendUrl: string;

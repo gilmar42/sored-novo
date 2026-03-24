@@ -1,0 +1,134 @@
+
+> sored-novo@1.0.0 dev
+> next dev
+
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.104:3000
+- Environments: .env.local, .env
+✓ Ready in 1882ms
+Creating turbopack project {
+  dir: 'C:\\Users\\gilmar dutra\\Documents\\sored-novo-main',
+  testMode: true
+}
+
+ GET / 200 in 1718ms (next.js: 603ms, application-code: 1115ms)
+ GET /api/subscriptions/plans 200 in 482ms (next.js: 385ms, application-code: 97ms)
+Mercado Pago configurado com sucesso (SDK v2)
+ POST /api/payments/pix/create 500 in 515ms (next.js: 405ms, application-code: 110ms)
+ POST /api/payments/pix/create 500 in 1192ms (next.js: 21ms, application-code: 1171ms)
+ POST /api/payments/pix/create 200 in 2.2s (next.js: 7ms, application-code: 2.2s)
+ POST /api/payments/pix/create 200 in 1705ms (next.js: 10ms, application-code: 1695ms)
+Mercado Pago configurado com sucesso (SDK v2)
+ GET /api/payments/pix/qrcode/150922217073 400 in 3.5s (next.js: 2.8s, application-code: 773ms)
+Mercado Pago configurado com sucesso (SDK v2)
+ GET /api/payments/pix/qrcode/150922350873 200 in 768ms (next.js: 172ms, application-code: 597ms)
+Mercado Pago configurado com sucesso (SDK v2)
+ GET / 200 in 215ms (next.js: 17ms, application-code: 198ms)
+ GET /api/subscriptions/plans 200 in 23ms (next.js: 9ms, application-code: 14ms)
+ POST /api/payments/pix/create 200 in 1716ms (next.js: 6ms, application-code: 1710ms)
+ GET /api/payments/pix/qrcode/150922644895 200 in 248ms (next.js: 20ms, application-code: 229ms)
+Mercado Pago configurado com sucesso (SDK v2)
+[Checkout Proxy] Encaminhando para: http://localhost:3001/api/payments/checkout
+[Checkout Proxy] Status de resposta do backend: 200
+ POST /api/payments/checkout 200 in 1654ms (next.js: 456ms, application-code: 1197ms)
+✓ Compiled in 1356ms
+ GET / 200 in 1349ms (next.js: 1129ms, application-code: 220ms)
+ GET / 200 in 117ms (next.js: 14ms, application-code: 103ms)
+ GET / 200 in 91ms (next.js: 8ms, application-code: 83ms)
+ GET / 200 in 80ms (next.js: 7ms, application-code: 74ms)
+ GET / 200 in 77ms (next.js: 6ms, application-code: 71ms)
+ GET / 200 in 65ms (next.js: 8ms, application-code: 56ms)
+ GET / 200 in 67ms (next.js: 11ms, application-code: 56ms)
+ GET / 200 in 86ms (next.js: 9ms, application-code: 77ms)
+ GET / 200 in 82ms (next.js: 6ms, application-code: 75ms)
+ GET / 200 in 84ms (next.js: 11ms, application-code: 73ms)
+ GET / 200 in 77ms (next.js: 14ms, application-code: 63ms)
+ GET / 200 in 65ms (next.js: 6ms, application-code: 59ms)
+ GET / 200 in 74ms (next.js: 8ms, application-code: 66ms)
+ GET / 200 in 66ms (next.js: 9ms, application-code: 58ms)
+ GET / 200 in 71ms (next.js: 9ms, application-code: 62ms)
+ GET / 200 in 101ms (next.js: 7ms, application-code: 95ms)
+ GET / 200 in 124ms (next.js: 15ms, application-code: 109ms)
+ GET / 200 in 99ms (next.js: 12ms, application-code: 86ms)
+ GET / 200 in 72ms (next.js: 10ms, application-code: 62ms)
+ GET / 200 in 64ms (next.js: 6ms, application-code: 58ms)
+ GET / 200 in 97ms (next.js: 5ms, application-code: 92ms)
+ GET / 200 in 70ms (next.js: 7ms, application-code: 63ms)
+ GET / 200 in 58ms (next.js: 7ms, application-code: 52ms)
+ GET / 200 in 77ms (next.js: 7ms, application-code: 70ms)
+ GET / 200 in 89ms (next.js: 8ms, application-code: 82ms)
+ GET / 200 in 377ms (next.js: 7ms, application-code: 371ms)
+ GET / 200 in 97ms (next.js: 12ms, application-code: 85ms)
+ GET / 200 in 82ms (next.js: 9ms, application-code: 72ms)
+ GET / 200 in 63ms (next.js: 9ms, application-code: 55ms)
+ GET / 200 in 59ms (next.js: 6ms, application-code: 53ms)
+ GET / 200 in 186ms (next.js: 8ms, application-code: 178ms)
+ GET / 200 in 55ms (next.js: 5ms, application-code: 49ms)
+ GET / 200 in 67ms (next.js: 6ms, application-code: 61ms)
+ GET / 200 in 53ms (next.js: 4ms, application-code: 49ms)
+ GET / 200 in 59ms (next.js: 7ms, application-code: 52ms)
+ GET / 200 in 59ms (next.js: 6ms, application-code: 53ms)
+ GET / 200 in 83ms (next.js: 9ms, application-code: 74ms)
+ GET / 200 in 69ms (next.js: 10ms, application-code: 59ms)
+ GET / 200 in 51ms (next.js: 5ms, application-code: 46ms)
+ GET / 200 in 54ms (next.js: 6ms, application-code: 48ms)
+ GET / 200 in 55ms (next.js: 6ms, application-code: 48ms)
+ GET / 200 in 72ms (next.js: 7ms, application-code: 66ms)
+ GET / 200 in 52ms (next.js: 6ms, application-code: 47ms)
+ GET / 200 in 66ms (next.js: 10ms, application-code: 57ms)
+ GET / 200 in 73ms (next.js: 6ms, application-code: 66ms)
+ GET / 200 in 62ms (next.js: 4ms, application-code: 58ms)
+ GET / 200 in 64ms (next.js: 5ms, application-code: 59ms)
+ GET / 200 in 62ms (next.js: 8ms, application-code: 53ms)
+ GET / 200 in 57ms (next.js: 6ms, application-code: 51ms)
+ GET / 200 in 56ms (next.js: 5ms, application-code: 51ms)
+ GET / 200 in 61ms (next.js: 10ms, application-code: 52ms)
+ GET / 200 in 58ms (next.js: 6ms, application-code: 52ms)
+ GET / 200 in 64ms (next.js: 11ms, application-code: 53ms)
+ GET / 200 in 63ms (next.js: 10ms, application-code: 54ms)
+ GET / 200 in 59ms (next.js: 9ms, application-code: 49ms)
+ GET / 200 in 53ms (next.js: 6ms, application-code: 47ms)
+ GET / 200 in 75ms (next.js: 6ms, application-code: 69ms)
+ GET / 200 in 57ms (next.js: 7ms, application-code: 50ms)
+ GET / 200 in 91ms (next.js: 7ms, application-code: 84ms)
+ GET / 200 in 75ms (next.js: 9ms, application-code: 66ms)
+ GET / 200 in 74ms (next.js: 7ms, application-code: 67ms)
+ GET / 200 in 67ms (next.js: 10ms, application-code: 57ms)
+ GET / 200 in 77ms (next.js: 6ms, application-code: 71ms)
+ GET / 200 in 52ms (next.js: 6ms, application-code: 47ms)
+ GET / 200 in 55ms (next.js: 5ms, application-code: 49ms)
+ GET / 200 in 70ms (next.js: 7ms, application-code: 62ms)
+ GET / 200 in 81ms (next.js: 12ms, application-code: 69ms)
+ GET / 200 in 69ms (next.js: 7ms, application-code: 61ms)
+ GET / 200 in 58ms (next.js: 6ms, application-code: 52ms)
+ GET / 200 in 53ms (next.js: 7ms, application-code: 45ms)
+ GET / 200 in 58ms (next.js: 7ms, application-code: 51ms)
+ GET / 200 in 71ms (next.js: 8ms, application-code: 63ms)
+ GET / 200 in 53ms (next.js: 4ms, application-code: 48ms)
+ GET / 200 in 62ms (next.js: 6ms, application-code: 56ms)
+ GET / 200 in 53ms (next.js: 5ms, application-code: 48ms)
+ GET / 200 in 54ms (next.js: 6ms, application-code: 48ms)
+ GET / 200 in 68ms (next.js: 6ms, application-code: 62ms)
+ GET / 200 in 61ms (next.js: 6ms, application-code: 55ms)
+prisma:error 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].user.findUnique()` invocation in
+C:\Users\gilmar dutra\Documents\sored-novo-main\.next\dev\server\chunks\[root-of-the-server]__02_3fph._.js:113:171
+
+  110 const normalizedTenantEmail = tenantEmail?.trim().toLowerCase();
+  111 const normalizedUserEmail = userEmail?.trim().toLowerCase();
+  112 // Validar se o usuário já existe
+→ 113 const existingUser = await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$prisma$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].user.findUnique(
+error: Error validating datasource `db`: the URL must start with the protocol `mysql://`.
+  -->  schema.prisma:12
+   | 
+11 |   provider = "mysql"
+12 |   url      = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+ POST /api/auth/register 500 in 1085ms (next.js: 940ms, application-code: 146ms)
+✓ Compiled in 524ms
+ POST /api/subscriptions 404 in 420ms (next.js: 350ms, application-code: 70ms)
+ GET / 200 in 2.6s (next.js: 586ms, application-code: 2.0s)
+ GET /api/subscriptions/plans 200 in 660ms (next.js: 634ms, application-code: 26ms)

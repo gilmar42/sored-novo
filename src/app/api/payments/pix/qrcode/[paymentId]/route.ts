@@ -4,10 +4,10 @@ import { canHandlePaymentsLocally, getLocalPixQrCode } from '../../../_utils/loc
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
   ) {
   try {
-    const { paymentId } = params;
+    const { paymentId } = await params;
     
     if (!paymentId) {
       return NextResponse.json(

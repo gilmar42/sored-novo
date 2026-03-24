@@ -7,20 +7,10 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs';
 import path from 'path';
-import { connectDB } from './config/database';
 import logger from './utils/logger';
-import authRoutes from './routes/auth';
-import clientRoutes from './routes/clients';
-import materialRoutes from './routes/materials';
-import laborRoutes from './routes/labor';
-import machineRoutes from './routes/machines';
-import budgetRoutes from './routes/budgets';
-import pdfRoutes from './routes/pdf';
-import dashboardRoutes from './routes/dashboard';
-import settingsRoutes from './routes/settings';
 import paymentRoutes from './routes/payments';
-import webhookRoutes from './routes/webhooks';
 import subscriptionRoutes from './routes/subscriptions';
+import webhookRoutes from './routes/webhooks';
 import { getBaseUrl, getFrontendUrl } from './utils/publicUrls';
 
 const app = express();
@@ -51,29 +41,24 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // Permitir requisições sem origin (ex: mobile apps, Postman)
     if (!origin) return callback(null, true);
-    
-    // Em desenvolvimento, permitir qualquer origem local
+
     if (process.env.NODE_ENV !== 'production') {
       const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin);
       if (isLocal) return callback(null, true);
-      
-      // Permitir qualquer origem em desenvolvimento
       console.log(`[CORS] Permitindo origem em desenvolvimento: ${origin}`);
       return callback(null, true);
     }
-    
-    // Em produção, verificar origens permitidas
+
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    
+
     console.error(`[CORS] Bloqueado para origem: ${origin}`);
     callback(new Error(`CORS bloqueado para origem: ${origin}`));
   },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
 app.use(helmet());
@@ -82,10 +67,9 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware de logging HTTP
 app.use((req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.http('Requisicao HTTP', {
@@ -95,26 +79,21 @@ app.use((req, res, next) => {
       duration: `${duration}ms`,
       ip: req.ip,
       userAgent: req.get('User-Agent'),
-      userId: (req as any).user?._id,
-      tenantId: (req as any).tenant?._id
+      userId: (req as any).user?.id,
+      tenantId: (req as any).tenant?.id,
     });
   });
-  
+
   next();
 });
 
-if (process.env.NODE_ENV !== 'test') {
-  connectDB();
-}
-
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   logger.info('Endpoint de saude acessado');
-  res.json({ status: 'OK', message: 'Backend do SORED esta em execucao' });
+  res.json({ status: 'OK', message: 'Backend de pagamentos do SORED esta em execucao' });
 });
 
-// Endpoint para logs (apenas desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
-  app.get('/api/logs', (req, res) => {
+  app.get('/api/logs', (_req, res) => {
     try {
       const logFiles = fs.readdirSync(path.join(process.cwd(), 'logs'));
       const logs: { [key: string]: string[] } = {};
@@ -123,53 +102,43 @@ if (process.env.NODE_ENV !== 'production') {
         if (file.endsWith('.log')) {
           const filePath = path.join(process.cwd(), 'logs', file);
           const content = fs.readFileSync(filePath, 'utf8');
-          logs[file] = content.split('\n').slice(-50); // últimas 50 linhas
+          logs[file] = content.split('\n').slice(-50);
         }
       });
 
       res.json(logs);
-    } catch (error) {
+    } catch {
       res.status(500).json({ error: 'Erro ao ler logs' });
     }
   });
 }
 
-app.use('/api/auth', authRoutes);
-app.use('/api/clients', clientRoutes);
-app.use('/api/materials', materialRoutes);
-app.use('/api/labor', laborRoutes);
-app.use('/api/machines', machineRoutes);
-app.use('/api/budgets', budgetRoutes);
-app.use('/api/pdf', pdfRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/settings', settingsRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/webhooks', webhookRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
-// Middleware de tratamento de erro global
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error('Erro não tratado', { 
-    error: err.message, 
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error('Erro não tratado', {
+    error: err.message,
     stack: err.stack,
     url: req.url,
     method: req.method,
-    ip: req.ip
+    ip: req.ip,
   });
   const status = err.status || 500;
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Ocorreu um erro interno no servidor.' 
+  const message = process.env.NODE_ENV === 'production'
+    ? 'Ocorreu um erro interno do servidor.'
     : err.message || 'Erro interno do servidor';
-    
+
   res.status(status).json({
     status: 'error',
-    message
+    message,
   });
 });
 
 if (process.env.NODE_ENV !== 'test' && !isVercel) {
   app.listen(PORT, () => {
-    logger.info('SORED Backend iniciado', { port: PORT, environment: process.env.NODE_ENV });
+    logger.info('SORED Backend de pagamentos iniciado', { port: PORT, environment: process.env.NODE_ENV });
   });
 }
 

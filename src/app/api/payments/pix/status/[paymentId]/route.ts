@@ -4,11 +4,13 @@ import { canHandlePaymentsLocally, getLocalPixStatus } from '../../../_utils/loc
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { paymentId: string } }
+  { params }: { params: Promise<{ paymentId: string }> }
 ) {
   try {
+    const { paymentId } = await params;
+
     if (canHandlePaymentsLocally()) {
-      const status = await getLocalPixStatus(params.paymentId);
+      const status = await getLocalPixStatus(paymentId);
       return NextResponse.json(status, { status: 200 });
     }
 
@@ -21,7 +23,7 @@ export async function GET(
         { status: 503 }
       );
     }
-    const targetUrl = `${backendUrl}/api/payments/pix/status/${params.paymentId}`;
+    const targetUrl = `${backendUrl}/api/payments/pix/status/${paymentId}`;
 
     const response = await fetch(targetUrl, {
       method: 'GET',

@@ -1,4 +1,5 @@
 import mercadoPagoClient from '@/lib/mercadoPago';
+import prisma from '@/lib/prisma';
 
 const stripTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 
@@ -7,7 +8,23 @@ const ensureHasScheme = (value: string) => {
   return `https://${value}`;
 };
 
-export const canHandlePaymentsLocally = () => mercadoPagoClient.isConfigured();
+const hasPlaceholderValue = (value: string) => /x{8,}/i.test(value) || value.includes('your_');
+
+const hasUsableLocalCredentials = () => {
+  const accessToken = (process.env.MERCADO_PAGO_ACCESS_TOKEN || '').trim();
+  const publicKey =
+    (process.env.MERCADO_PAGO_PUBLIC_KEY ||
+      process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ||
+      '').trim();
+
+  if (!accessToken || !publicKey) return false;
+  if (hasPlaceholderValue(accessToken) || hasPlaceholderValue(publicKey)) return false;
+
+  return true;
+};
+
+export const canHandlePaymentsLocally = () =>
+  hasUsableLocalCredentials() && mercadoPagoClient.isConfigured();
 
 export const getMercadoPagoPublicKey = () => mercadoPagoClient.getPublicKey();
 
@@ -38,6 +55,30 @@ export const getPublicAppUrl = () => {
 };
 
 export const getWebhookUrl = () => `${getPublicAppUrl()}/api/webhooks/mercadopago`;
+
+const createInternalPaymentRecord = async (data: {
+  orderId: string;
+  amount: number;
+  paymentMethod: string;
+  preferenceId?: string;
+  mercadoPagoPaymentId?: string;
+}) => {
+  try {
+    await prisma.payment.create({
+      data: {
+        orderId: data.orderId,
+        amount: data.amount,
+        currency: 'BRL',
+        paymentMethod: data.paymentMethod,
+        preferenceId: data.preferenceId,
+        mercadoPagoPaymentId: data.mercadoPagoPaymentId,
+        status: 'pendente',
+      },
+    });
+  } catch (error) {
+    console.warn('[Local Mercado Pago] Falha ao persistir pagamento interno:', error);
+  }
+};
 
 export const createLocalCheckout = async (body: {
   orderId: string;
@@ -70,6 +111,13 @@ export const createLocalCheckout = async (body: {
 
   const isSandbox = !mercadoPagoClient.getPublicKey().startsWith('APP_USR-');
 
+  await createInternalPaymentRecord({
+    orderId: body.orderId,
+    amount: body.amount,
+    paymentMethod: body.paymentMethod || 'credit_card',
+    preferenceId: preference.id || undefined,
+  });
+
   return {
     paymentId: body.orderId,
     preferenceId: preference.id,
@@ -91,6 +139,13 @@ export const createLocalPixPayment = async (body: {
   const payment = await mercadoPagoClient.createPixPayment({
     ...body,
     notificationUrl: getWebhookUrl(),
+  });
+
+  await createInternalPaymentRecord({
+    orderId: body.orderId,
+    amount: body.amount,
+    paymentMethod: 'pix',
+    mercadoPagoPaymentId: String(payment.id),
   });
 
   return {
@@ -131,5 +186,59 @@ export const getLocalPaymentStatus = async (paymentId: string) => {
     }
 
     return result;
+  }
+};
+
+export const processLocalWebhook = async (eventData: any) => {
+  const { type, data } = eventData || {};
+  if (type !== 'payment' || !data?.id) {
+    return;
+  }
+
+  const mpPayment = await mercadoPagoClient.getPayment(String(data.id));
+  const externalReference = String(mpPayment.external_reference || '').replace(/^order_/, '');
+  if (!externalReference) {
+    return;
+  }
+
+  const statusMap: Record<string, string> = {
+    approved: 'pago',
+    pending: 'pendente',
+    rejected: 'falhou',
+    cancelled: 'cancelado',
+  };
+  const newStatus = statusMap[mpPayment.status || 'pending'] || 'pendente';
+
+  const existingPayment =
+    (await prisma.payment.findFirst({ where: { orderId: externalReference } })) ||
+    (await prisma.payment.findFirst({ where: { mercadoPagoPaymentId: String(data.id) } }));
+
+  if (existingPayment) {
+    await prisma.payment.update({
+      where: { id: existingPayment.id },
+      data: {
+        status: newStatus,
+        mercadoPagoPaymentId: String(data.id),
+      },
+    });
+
+    await prisma.paymentEvent.create({
+      data: {
+        paymentId: existingPayment.id,
+        eventType: type,
+        payload: eventData,
+        processed: true,
+      },
+    }).catch(() => undefined);
+  }
+
+  if (!externalReference.startsWith('plan_')) {
+    const budgetStatus = newStatus === 'pago' ? 'PAID' : newStatus === 'falhou' ? 'PAYMENT_FAILED' : null;
+    if (budgetStatus) {
+      await prisma.budget.update({
+        where: { id: externalReference },
+        data: { status: budgetStatus },
+      }).catch(() => undefined);
+    }
   }
 };

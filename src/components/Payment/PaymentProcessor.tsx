@@ -52,6 +52,16 @@ export default function PaymentProcessor({
   const [paymentResult, setPaymentResult] = useState<any>(initialPaymentResult || null);
   
   const { createPayment, getPixQrCode, isReady } = useMercadoPago();
+  const isSubscriptionPlan = plan.id === 'monthly' || plan.id === 'annual';
+
+  const getApiErrorMessage = (error: any, fallback: string) => {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      fallback
+    );
+  };
 
   // Sync state up when it changes locally
   useEffect(() => {
@@ -152,17 +162,17 @@ export default function PaymentProcessor({
   const processCreditCardPayment = async () => {
     const normalized = validateForm();
     if (!normalized) return;
-    if (!isReady) {
-      onError('Mercado Pago ainda não está pronto. Verifique sua conexão ou configurações.');
-      return;
-    }
 
     setLoading(true);
     try {
+      if (!isReady) {
+        throw new Error('Mercado Pago ainda não está pronto. Verifique sua conexão ou configurações.');
+      }
+
       const result = await createPayment({
         orderId: `plan_${plan.id}_${Date.now()}`,
         amount: plan.price,
-        description: `Plano ${plan.name} - ${plan.period}`,
+        description: `Assinatura ${plan.name}`,
         paymentMethod: 'credit_card',
         payerData: {
           payerEmail: normalized.email,
@@ -180,7 +190,12 @@ export default function PaymentProcessor({
         initPoint: result.initPoint,
         amount: plan.price,
         paymentId: result.paymentId || result.id,
-        sandbox: result.sandbox
+        sandbox: result.sandbox,
+        subscriptionFlow: isSubscriptionPlan,
+        email: normalized.email,
+        planId: plan.id,
+        planPeriod: plan.period,
+        description: `Assinatura ${plan.name}`,
       });
       
       // Tentar abrir popup (pode ser bloqueado)
@@ -190,7 +205,7 @@ export default function PaymentProcessor({
         console.warn('Popup bloqueado pelo navegador');
       }
     } catch (error: any) {
-      onError(error.message || 'Erro ao processar pagamento');
+      onError(getApiErrorMessage(error, 'Erro ao processar pagamento'));
     } finally {
       setLoading(false);
     }
@@ -202,10 +217,51 @@ export default function PaymentProcessor({
 
     setLoading(true);
     try {
+      if (isSubscriptionPlan) {
+        const result = await createPayment({
+          orderId: `subscription_${plan.id}_${Date.now()}`,
+          amount: plan.price,
+          description: `Assinatura ${plan.name} - SORED`,
+          paymentMethod: 'pix',
+          payerData: {
+            payerEmail: normalized.email,
+            payerFirstName: normalized.firstName,
+            payerLastName: normalized.lastName,
+            payerPhone: normalized.phoneDigits
+          }
+        });
+        const paymentId = String(result.paymentId || result.id || '');
+        if (!paymentId) {
+          throw new Error('Mercado Pago não retornou o identificador do pagamento PIX.');
+        }
+
+        const qrData = await getPixQrCode(paymentId);
+
+        setPaymentResult({
+          type: 'pix',
+          paymentId,
+          qrCode: qrData.qrCode,
+          qrCodeText: qrData.qrCodeText,
+          copyAndPasteKey: qrData.copyAndPasteKey,
+          expirationDate: qrData.expirationDate,
+          amount: qrData.amount,
+          subscriptionFlow: true,
+          email: normalized.email,
+          planId: plan.id,
+          planPeriod: plan.period,
+          description: `Assinatura ${plan.name}`,
+        });
+        return;
+      }
+
+      if (!isReady) {
+        throw new Error('Mercado Pago ainda não está pronto. Verifique sua conexão ou configurações.');
+      }
+
       const result = await createPayment({
         orderId: `plan_${plan.id}_${Date.now()}`,
         amount: plan.price,
-        description: `Plano ${plan.name} - ${plan.period}`,
+        description: `Assinatura ${plan.name}`,
         paymentMethod: 'pix',
         payerData: {
           payerEmail: normalized.email,
@@ -228,7 +284,7 @@ export default function PaymentProcessor({
         amount: qrData.amount
       });
     } catch (error: any) {
-      onError(error.message || 'Erro ao processar pagamento PIX');
+      onError(getApiErrorMessage(error, 'Erro ao processar pagamento PIX'));
     } finally {
       setLoading(false);
     }

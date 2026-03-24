@@ -1,19 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveBackendUrl } from '../../../_utils/backendUrl';
-import { canHandlePaymentsLocally, getLocalPaymentStatus } from '../../_utils/localMercadoPago';
+import { resolveBackendUrl } from '../_utils/backendUrl';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ paymentId: string }> }
-) {
+export async function POST(request: NextRequest) {
   try {
-    const { paymentId } = await params;
-
-    if (canHandlePaymentsLocally()) {
-      const payment = await getLocalPaymentStatus(paymentId);
-      return NextResponse.json(payment, { status: 200 });
-    }
-
     let backendUrl: string;
     try {
       backendUrl = resolveBackendUrl();
@@ -23,13 +12,17 @@ export async function GET(
         { status: 503 }
       );
     }
-    const targetUrl = `${backendUrl}/api/payments/status/${paymentId}`;
+
+    const body = await request.json();
+    const targetUrl = `${backendUrl}/api/subscriptions`;
 
     const response = await fetch(targetUrl, {
-      method: 'GET',
+      method: 'POST',
       headers: {
-        'Authorization': request.headers.get('authorization') || '',
+        'Content-Type': 'application/json',
+        Authorization: request.headers.get('authorization') || '',
       },
+      body: JSON.stringify(body),
     });
 
     const text = await response.text();
@@ -42,7 +35,7 @@ export async function GET(
 
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    console.error('[Payment Status] Erro:', error?.message || error);
+    console.error('[Subscriptions Proxy] Erro:', error?.message || error);
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }

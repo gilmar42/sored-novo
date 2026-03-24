@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const nextConfig = {
+  output: 'standalone',
   // Evita o warning de "workspace root" quando existem lockfiles fora do repo.
   // Forca o Turbopack a considerar este diretorio como a raiz do workspace.
   turbopack: {
@@ -28,6 +29,10 @@ const nextConfig = {
   },
   // Adicionar configuração CORS para desenvolvimento
   async headers() {
+    if (process.env.NODE_ENV === 'production') {
+      return [];
+    }
+
     return [
       {
         source: "/api/:path*",

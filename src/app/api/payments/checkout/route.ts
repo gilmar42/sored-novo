@@ -7,8 +7,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     if (canHandlePaymentsLocally()) {
-      const result = await createLocalCheckout(body);
-      return NextResponse.json(result, { status: 200 });
+      try {
+        const result = await createLocalCheckout(body);
+        return NextResponse.json(result, { status: 200 });
+      } catch (error: any) {
+        console.warn('[Checkout Proxy] Falha no processamento local, usando backend configurado:', error?.message || error);
+      }
     }
 
     let backendUrl: string;

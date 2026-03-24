@@ -7,6 +7,7 @@ import { CheckCircle, ArrowLeft, Home, Clock } from 'lucide-react';
 export default function PaymentSuccessClient() {
   const [paymentData, setPaymentData] = useState<any>(null);
   const [countdown, setCountdown] = useState(5);
+  const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -34,12 +35,14 @@ export default function PaymentSuccessClient() {
       }
     }
 
+    const tokenPresent = !!localStorage.getItem('token');
+    setHasToken(tokenPresent);
+
     const timer = window.setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           window.clearInterval(timer);
-          const hasToken = !!localStorage.getItem('token');
-          window.location.href = hasToken ? '/dashboard' : '/login';
+          window.location.href = tokenPresent ? '/dashboard' : '/register';
           return 0;
         }
         return prev - 1;
@@ -75,10 +78,10 @@ export default function PaymentSuccessClient() {
             <CheckCircle className="w-10 h-10 text-green-400" />
           </div>
 
-          <h1 className="text-3xl font-bold mb-4 text-green-400">Pagamento Aprovado!</h1>
+          <h1 className="text-3xl font-bold mb-4 text-green-400">Assinatura iniciada com sucesso!</h1>
 
           <p className="text-xl text-muted-foreground mb-8">
-            Sua assinatura do SORED foi ativada com sucesso.
+            Seu acesso de teste foi liberado agora. Se você não cancelar até o fim do período grátis, a cobrança será feita automaticamente no plano escolhido.
           </p>
 
           <div className="bg-slate-800 p-6 rounded-lg mb-8 text-left max-w-2xl mx-auto">
@@ -96,7 +99,7 @@ export default function PaymentSuccessClient() {
               </div>
 
               <div className="flex justify-between py-2 border-b border-slate-700">
-                <span className="text-muted-foreground">Valor Pago:</span>
+                <span className="text-muted-foreground">Valor programado após o teste:</span>
                 <span className="text-green-400 font-bold text-lg">
                   R$ {paymentData.amount.toFixed(2)}
                 </span>
@@ -133,22 +136,37 @@ export default function PaymentSuccessClient() {
           </div>
 
           <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg mb-8">
-            <div className="flex items-center justify-center gap-2 text-blue-400">
+            <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
               <Clock className="w-4 h-4" />
               <span className="text-sm">
-                Redirecionando para o dashboard em {countdown} segundos...
+                {hasToken
+                  ? `Redirecionando para o dashboard em ${countdown} segundos...`
+                  : `Redirecionando para concluir seu cadastro em ${countdown} segundos...`}
               </span>
             </div>
+            <p className="text-xs text-center text-blue-200">
+              Você poderá cancelar antes do fim do teste para evitar a cobrança automática.
+            </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/dashboard"
-              className="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
-            >
-              <Home className="w-4 h-4" />
-              Ir para o Dashboard Agora
-            </Link>
+            {hasToken ? (
+              <Link
+                href="/dashboard"
+                className="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Ir para o Dashboard Agora
+              </Link>
+            ) : (
+              <Link
+                href="/register"
+                className="bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
+              >
+                <Home className="w-4 h-4" />
+                Concluir Cadastro
+              </Link>
+            )}
 
             <button
               onClick={() => { window.location.href = '/subscription'; }}

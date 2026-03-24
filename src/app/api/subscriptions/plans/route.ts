@@ -2,6 +2,24 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
+    const sharedFeatures = {
+      maxUsers: 10,
+      maxProjects: 9999,
+      maxMaterials: 99999,
+      apiAccess: true,
+      advancedReports: true,
+      prioritySupport: true,
+      customBranding: true,
+      dataExport: true
+    };
+
+    const sharedHighlights = [
+      'Acesso completo ao sistema durante o período de teste',
+      '5 dias grátis para configurar e usar a plataforma',
+      'Cobrança automática ao final do teste',
+      'Cancelamento simples antes da cobrança',
+    ];
+
     const plansData = [
       {
         id: 'monthly',
@@ -10,16 +28,9 @@ export async function GET() {
         currency: 'BRL',
         period: 'month',
         trialDays: 5,
-        features: {
-          maxUsers: 5,
-          maxProjects: 100,
-          maxMaterials: 1000,
-          apiAccess: true,
-          advancedReports: true,
-          prioritySupport: false,
-          customBranding: false,
-          dataExport: true
-        },
+        features: sharedFeatures,
+        highlights: sharedHighlights,
+        billingMode: 'automatic_renewal',
         savings: null,
         popular: false
       },
@@ -30,16 +41,9 @@ export async function GET() {
         currency: 'BRL',
         period: 'year',
         trialDays: 5,
-        features: {
-          maxUsers: 10,
-          maxProjects: 9999,
-          maxMaterials: 99999,
-          apiAccess: true,
-          advancedReports: true,
-          prioritySupport: true,
-          customBranding: true,
-          dataExport: true
-        },
+        features: sharedFeatures,
+        highlights: sharedHighlights,
+        billingMode: 'automatic_renewal',
         savings: 'Economia de R$ 167 no ano',
         popular: true
       }

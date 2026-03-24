@@ -1,27 +1,24 @@
-import Payment from '../../models/Payment';
-import PaymentEvent from '../../models/PaymentEvent';
+import prisma from '../../lib/prisma';
 
 class PaymentRepository {
   async createPayment(data: any) {
-    const payment = new Payment(data);
-    return await payment.save();
+    return prisma.payment.create({ data });
   }
 
   async findPaymentById(id: string) {
-    return await Payment.findById(id);
+    return prisma.payment.findUnique({ where: { id } });
   }
 
   async findPaymentByOrderId(orderId: string) {
-    return await Payment.findOne({ orderId });
+    return prisma.payment.findFirst({ where: { orderId } });
   }
 
   async updatePayment(id: string, data: any) {
-    return await Payment.findByIdAndUpdate(id, data, { new: true });
+    return prisma.payment.update({ where: { id }, data });
   }
 
   async createPaymentEvent(data: any) {
-    const event = new PaymentEvent(data);
-    return await event.save();
+    return prisma.paymentEvent.create({ data });
   }
 }
 

@@ -1,12 +1,12 @@
+import ProtectedPage from '../_components/ProtectedPage';
 import SettingsClient from './SettingsClient';
-import DashboardProvider from '@/components/DashboardProvider';
 
 export const dynamic = 'force-dynamic';
 
 export default function Page() {
   return (
-    <DashboardProvider>
+    <ProtectedPage>
       <SettingsClient />
-    </DashboardProvider>
+    </ProtectedPage>
   );
 }

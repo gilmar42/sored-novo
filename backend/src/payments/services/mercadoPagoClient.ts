@@ -297,12 +297,25 @@ class MercadoPagoClient {
       throw new Error('Mercado Pago não configurado');
     }
 
+    const normalizedBackUrl = (() => {
+      const url = data.returnUrl || '';
+      const isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.includes('0.0.0.0');
+      if (process.env.NODE_ENV === 'production') {
+        if (!url) throw new Error('returnUrl is required in production');
+        if (!url.startsWith('https://')) throw new Error('returnUrl must be https:// in production');
+        if (isLocal) throw new Error('returnUrl cannot be localhost in production');
+        return url;
+      }
+
+      return isLocal ? 'https://example.com/payment-success' : url;
+    })();
+
     const startDate = new Date();
     const endDate = new Date();
     endDate.setFullYear(endDate.getFullYear() + 2); // Assinatura válida por 2 anos
 
     const preApprovalData = {
-      back_url: data.returnUrl,
+      back_url: normalizedBackUrl,
       reason: data.description,
       external_reference: data.orderId,
       payer_email: data.payerEmail,

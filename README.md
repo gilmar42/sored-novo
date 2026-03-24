@@ -23,6 +23,8 @@ O SORED é um sistema web desenvolvido com Next.js e Node.js que permite empresa
 ### Frontend
 - **Next.js 14** - Framework React
 - **TypeScript** - Tipagem segura
+- **Prisma** - ORM relacional
+- **MariaDB** - Banco principal da aplicação
 - **TailwindCSS** - Framework de estilização
 - **React Hook Form** - Formulários
 - **React Query** - Gerenciamento de estado
@@ -33,8 +35,8 @@ O SORED é um sistema web desenvolvido com Next.js e Node.js que permite empresa
 - **Node.js** - Runtime JavaScript
 - **Express** - Framework web
 - **TypeScript** - Tipagem segura
-- **MongoDB** - Banco de dados NoSQL
-- **Mongoose** - ODM MongoDB
+- **Prisma** - ORM do backend de pagamentos
+- **MariaDB** - Persistência compartilhada do sistema
 - **JWT** - Autenticação
 - **PDFKit** - Geração de PDF
 - **Multer** - Upload de arquivos
@@ -57,7 +59,7 @@ sored-novo/
 ├── backend/                      # Backend Node.js
 │   ├── src/
 │   │   ├── config/              # Configurações
-│   │   │   └── database.ts      # Conexão MongoDB
+│   │   │   └── database.ts      # Arquivo legado de conexão anterior
 │   │   ├── controllers/         # Controladores
 │   │   │   ├── authController.ts
 │   │   │   ├── clientController.ts
@@ -106,7 +108,7 @@ sored-novo/
 
 ### Pré-requisitos
 - Node.js 18+
-- MongoDB 5.0+
+- MariaDB 10.6+ ou MySQL compatível
 - npm ou yarn
 
 ### 1. Clonar o repositório
@@ -131,9 +133,13 @@ npm install
 cd backend
 cp .env.example .env
 
-# Editar .env com suas configurações
-MONGODB_URI=mongodb://localhost:27017/sored
+# Editar os dois arquivos de ambiente com suas configurações
+# .env
+DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/DB
 JWT_SECRET=your_jwt_secret_key_here
+
+# backend/.env
+DATABASE_URL=mysql://USER:PASSWORD@HOST:3306/DB
 PORT=3001
 ```
 
@@ -151,6 +157,31 @@ npm run dev
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - Health Check: http://localhost:3001/api/health
+
+## Deploy na Hostinger
+
+O fluxo recomendado para produção é `Hostinger VPS + PM2 + Nginx`, com:
+- `Next.js` na porta `3000`
+- `backend` na porta `3001`
+- `Nginx` publicando o app Next e o backend acessível internamente pelo Next
+- `MariaDB` para o app principal e para o backend de pagamentos
+
+Comandos padronizados na raiz do projeto:
+```bash
+cp .env.hostinger.example .env
+cp backend/.env.hostinger.example backend/.env
+npm run hostinger:install
+npm run build:hostinger
+npm run db:push
+npm run hostinger:start
+```
+
+Arquivos de apoio:
+- `DEPLOYMENT.md`
+- `ecosystem.config.cjs`
+- `nginx-hostinger.conf`
+- `.env.hostinger.example`
+- `backend/.env.hostinger.example`
 
 ## 📊 API Endpoints
 

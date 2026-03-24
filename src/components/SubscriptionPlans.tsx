@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/UI';
-import { Check, Star, CreditCard, QrCode } from 'lucide-react';
+import { Check, Star } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import api from '@/lib/api';
 
@@ -23,6 +23,8 @@ interface Plan {
     customBranding: boolean;
     dataExport: boolean;
   };
+  highlights: string[];
+  billingMode: 'automatic_renewal';
   savings?: string;
   popular: boolean;
 }
@@ -72,11 +74,11 @@ export default function SubscriptionPlans({ onPlanSelect, currentPlan }: Subscri
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-4">Escolha seu plano</h2>
         <p className="text-muted-foreground">
-          Comece com 5 dias grátis. Cancele quando quiser.
+          Ambos os planos liberam acesso imediato, 5 dias grátis e renovação automática caso você não cancele.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
         {plans.map((plan) => (
           <PlanCard
             key={plan.id}
@@ -99,8 +101,6 @@ interface PlanCardProps {
 }
 
 function PlanCard({ plan, currentPlan, isSelected, onSelect }: PlanCardProps) {
-  const [showPaymentMethods, setShowPaymentMethods] = useState(false);
-
   const isCurrentPlan = currentPlan === plan.id;
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -112,13 +112,6 @@ function PlanCard({ plan, currentPlan, isSelected, onSelect }: PlanCardProps) {
   const getPeriodText = (period: string) => {
     return period === 'year' ? '/ano' : '/mês';
   };
-
-  const getFeatureIcon = (hasFeature: boolean) => (
-    <Check className={cn(
-      "w-4 h-4 flex-shrink-0",
-      hasFeature ? "text-green-500" : "text-gray-400"
-    )} />
-  );
 
   return (
     <div className={cn(
@@ -157,43 +150,28 @@ function PlanCard({ plan, currentPlan, isSelected, onSelect }: PlanCardProps) {
         )}
         {plan.trialDays > 0 && (
           <p className="text-muted-foreground text-sm mt-2">
-            {plan.trialDays} dias grátis
+            {plan.trialDays} dias grátis com acesso liberado
           </p>
         )}
       </div>
 
       <div className="space-y-3 mb-6">
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(true)}
-          <span className="text-sm">{plan.features.maxUsers} usuário(s)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(true)}
-          <span className="text-sm">{plan.features.maxProjects} projetos</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(true)}
-          <span className="text-sm">{plan.features.maxMaterials} materiais</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(plan.features.apiAccess)}
-          <span className="text-sm">Acesso à API</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(plan.features.advancedReports)}
-          <span className="text-sm">Relatórios avançados</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(plan.features.prioritySupport)}
-          <span className="text-sm">Suporte prioritário</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(plan.features.customBranding)}
-          <span className="text-sm">Branding personalizado</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {getFeatureIcon(plan.features.dataExport)}
-          <span className="text-sm">Exportação de dados</span>
+        {plan.highlights.map((item) => (
+          <div key={item} className="flex items-center gap-2">
+            <Check className="w-4 h-4 flex-shrink-0 text-green-500" />
+            <span className="text-sm">{item}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 mb-6">
+        <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">Incluso nos dois planos</p>
+        <div className="grid grid-cols-1 gap-2 text-sm text-slate-200">
+          <span>{plan.features.maxUsers} usuários</span>
+          <span>{plan.features.maxProjects} projetos</span>
+          <span>{plan.features.maxMaterials} materiais</span>
+          <span>API, relatórios avançados e exportação</span>
+          <span>Suporte prioritário e branding personalizado</span>
         </div>
       </div>
 
@@ -208,34 +186,13 @@ function PlanCard({ plan, currentPlan, isSelected, onSelect }: PlanCardProps) {
                 : "bg-slate-700 hover:bg-slate-600 border-slate-600"
             )}
           >
-            Assinar agora
+            Começar teste grátis
           </Button>
-          
-          {showPaymentMethods && (
-            <div className="space-y-2">
-              <Button
-                onClick={() => onSelect(plan, 'credit_card')}
-                className="w-full h-10 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white flex items-center gap-2"
-              >
-                <CreditCard className="w-4 h-4" />
-                Cartão de Crédito
-              </Button>
-              <Button
-                onClick={() => onSelect(plan, 'pix')}
-                className="w-full h-10 bg-green-600 hover:bg-green-700 border-green-600 text-white flex items-center gap-2"
-              >
-                <QrCode className="w-4 h-4" />
-                PIX
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowPaymentMethods(false)}
-                className="w-full h-10 border-slate-600 hover:bg-slate-800"
-              >
-                Cancelar
-              </Button>
-            </div>
-          )}
+          <p className="text-xs text-center text-slate-400">
+            {plan.billingMode === 'automatic_renewal'
+              ? `A cobrança de ${formatPrice(plan.price)}${getPeriodText(plan.period)} só acontece após o teste, se você não cancelar.`
+              : ''}
+          </p>
         </div>
       ) : (
         <Button
@@ -247,7 +204,7 @@ function PlanCard({ plan, currentPlan, isSelected, onSelect }: PlanCardProps) {
               : "bg-green-600 hover:bg-green-700 border-green-600 text-white"
           )}
         >
-          {isCurrentPlan ? 'Plano Atual' : 'Começar Gratuitamente'}
+          {isCurrentPlan ? 'Plano Atual' : 'Começar teste grátis'}
         </Button>
       )}
     </div>

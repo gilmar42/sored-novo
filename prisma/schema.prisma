@@ -1,14 +1,14 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Prisma schema para o app principal em MariaDB/MySQL
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -39,9 +39,10 @@ model User {
   email       String   @unique
   password    String
   role        String   @default("user")
-  permissions String[] @default([])
+  permissions Json?
   isActive    Boolean  @default(true)
   lastLogin   DateTime?
+  payments    Payment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -131,7 +132,39 @@ model Subscription {
   mercadoPagoPaymentId String?
   amount               Float?
   paymentMethod        String?
-  features             String[]  @default([])
+  features             Json?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
+}
+
+model Payment {
+  id                   String         @id @default(uuid())
+  userId               String?
+  user                 User?          @relation(fields: [userId], references: [id])
+  orderId              String
+  amount               Float
+  currency             String         @default("BRL")
+  status               String         @default("pendente")
+  paymentMethod        String
+  mercadoPagoPaymentId String?
+  preferenceId         String?
+  events               PaymentEvent[]
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([orderId])
+  @@index([userId])
+}
+
+model PaymentEvent {
+  id        String   @id @default(uuid())
+  paymentId String
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  eventType String
+  payload   Json
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([paymentId])
 }
