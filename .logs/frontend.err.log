@@ -31,3 +31,18 @@ error: Error validating datasource `db`: the URL must start with the protocol `m
    | 
 
 Validation Error Count: 1
+[browser] Erro no pagamento: Request failed with status code 404 
+    at processCreditCardPayment (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js?id=%255Bproject%255D%252Fsrc%252Fcomponents%252FPayment%252FPaymentProcessor.tsx+%255Bapp-client%255D+%2528ecmascript%2529:197:20) (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js?id=%255Bproject%255D%252Fsrc%252Fcomponents%252FPayment%252FPaymentProcessor.tsx+%255Bapp-client%255D+%2528ecmascript%2529:197:20)
+[browser] Erro no pagamento: Faça login antes de contratar uma assinatura com cartão ou PIX. 
+    at ensureAuthenticatedForSubscription (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1099:16)
+    at processCreditCardPayment (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1189:14)
+    at executeDispatch (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10329:21)
+    at runWithFiberInDEV (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:131)
+    at processDispatchQueue (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10355:41)
+    at dispatchEventForPluginEventSystem/< (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10633:33)
+    at batchedUpdates$1 (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:2253:46)
+    at dispatchEventForPluginEventSystem (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10431:25)
+    at dispatchEvent (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:13002:70)
+    at dispatchDiscreteEvent (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:12984:64) (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1099:16)
+[browser] Erro no pagamento: Erro interno do servidor ao criar assinatura 
+    at processCreditCardPayment (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1244:20) (file://C:/Users/gilmar dutra/Documents/sored-novo-main/.next/dev/static/chunks/src_0mat6~g._.js:1244:20)

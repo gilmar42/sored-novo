@@ -115,4 +115,31 @@ C:\Users\gilmar dutra\Documents\sored-novo-main\backend\src\payments\services\pa
 Cannot fetch data from service:
 fetch failed
 [33m[33mwarn[33m[39m: [33mFalha ao persistir checkout internamente; retornando sessao do Mercado Pago mesmo assim[39m {"error":"\nInvalid `prisma.payment.create()` invocation in\nC:\\Users\\gilmar dutra\\Documents\\sored-novo-main\\backend\\src\\payments\\services\\paymentService.ts:72:42\n\n  69   preferenceId?: string;\n  70   mercadoPagoPaymentId?: string;\n  71 }) {\n→ 72   const payment = await prisma.payment.create(\nCannot fetch data from service:\nfetch failed","orderId":"plan_monthly_1774313949457","timestamp":"2026-03-23 21:59:10:5910"}
-[35m[35mhttp[35m[39m: [35mRequisicao HTTP
+[35m[35mhttp[35m[39m: [35mRequisicao HTTP[39m {"duration":"1040ms","ip":"::1","method":"POST","status":200,"timestamp":"2026-03-23 21:59:10:5910","url":"/checkout","userAgent":"node"}
+[32m[32minfo[32m[39m: [32mPagamento PIX criado[39m {"orderId":"subscription_annual_1774314082427","paymentId":151658614280,"timestamp":"2026-03-23 22:01:23:123"}
+prisma:warn Attempt 1/3 failed for querying: Cannot fetch data from service:
+fetch failed
+prisma:warn Retrying after 28ms
+prisma:warn Attempt 2/3 failed for querying: Cannot fetch data from service:
+fetch failed
+prisma:warn Retrying after 91ms
+prisma:warn Attempt 3/3 failed for querying: Cannot fetch data from service:
+fetch failed
+prisma:warn Retrying after 121ms
+prisma:error 
+Invalid `prisma.payment.create()` invocation in
+C:\Users\gilmar dutra\Documents\sored-novo-main\backend\src\payments\services\paymentService.ts:72:42
+
+  69   preferenceId?: string;
+  70   mercadoPagoPaymentId?: string;
+  71 }) {
+→ 72   const payment = await prisma.payment.create(
+Cannot fetch data from service:
+fetch failed
+[33m[33mwarn[33m[39m: [33mFalha ao persistir pagamento PIX internamente; retornando dados do Mercado Pago mesmo assim[39m {"error":"\nInvalid `prisma.payment.create()` invocation in\nC:\\Users\\gilmar dutra\\Documents\\sored-novo-main\\backend\\src\\payments\\services\\paymentService.ts:72:42\n\n  69   preferenceId?: string;\n  70   mercadoPagoPaymentId?: string;\n  71 }) {\n→ 72   const payment = await prisma.payment.create(\nCannot fetch data from service:\nfetch failed","mercadoPagoPaymentId":"151658614280","orderId":"subscription_annual_1774314082427","timestamp":"2026-03-23 22:01:24:124"}
+[32m[32minfo[32m[39m: [32mResposta da criação de pagamento PIX do MP:[39m {"id":151658614280,"status":"pending","timestamp":"2026-03-23 22:01:24:124"}
+[35m[35mhttp[35m[39m: [35mRequisicao HTTP[39m {"duration":"1467ms","ip":"::1","method":"POST","status":200,"timestamp":"2026-03-23 22:01:24:124","url":"/pix/create","userAgent":"node"}
+[32m[32minfo[32m[39m: [32mSolicitando QR Code para paymentId:[39m {"paymentId":"151658614280","timestamp":"2026-03-23 22:01:24:124"}
+[32m[32minfo[32m[39m: [32mQR Code PIX obtido[39m {"paymentId":"151658614280","timestamp":"2026-03-23 22:01:24:124"}
+[32m[32minfo[32m[39m: [32mQR Code obtido com sucesso para paymentId:[39m {"paymentId":"151658614280","timestamp":"2026-03-23 22:01:24:124"}
+[35m[35mhttp[35m[39m: [35mRequisicao HTTP[39m {"duration":"220ms","ip":"::1","method":"GET","status":200,"timestamp":"2026-03-23 22:01:24:124","url":"/pix/qrcode/151658614280","userAgent":"node"}
