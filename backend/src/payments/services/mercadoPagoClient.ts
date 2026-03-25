@@ -66,17 +66,27 @@ class MercadoPagoClient {
     const paymentMethods: any = {
       excluded_payment_methods: [],
       excluded_payment_types: [{ id: 'atm' }],
-      // Nao forcar 1 parcela: deixar o Mercado Pago decidir conforme cartao/usuario.
-      // Forcar parcelas pode gerar comportamento inesperado no Checkout.
-      installments: 12,
-      default_installments: 1
+      installments: 12
     };
 
     if (orderData.paymentMethod === 'pix') {
       paymentMethods.default_payment_method_id = 'pix';
     }
 
+    // Para cartão de crédito, não especificar default_installments para evitar problemas no Checkout Pro
+
     const preferenceData: any = {
+      purpose: 'WALLET_PURCHASE',
+      additional_info: {
+        items: [{
+          id: orderData.orderId,
+          title: orderData.description,
+          description: orderData.description,
+          quantity: 1,
+          unit_price: orderData.amount,
+          currency_id: 'BRL'
+        }]
+      },
       items: [{
         title: orderData.description,
         quantity: 1,
