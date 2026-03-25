@@ -41,7 +41,7 @@ export const getPaymentApiConfigurationError = () => {
     return '';
   }
 
-  return 'Pagamentos em produção exigem NEXT_PUBLIC_API_URL, NEXT_PUBLIC_PAYMENT_API_URL ou NEXT_PUBLIC_BACKEND_URL apontando para o backend público. Exemplo: https://api.seudominio.com/api';
+  return '';
 };
 
 const paymentApi = axios.create({
