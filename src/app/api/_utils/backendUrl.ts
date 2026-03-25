@@ -28,7 +28,7 @@ export const resolveBackendUrl = () => {
   if (!raw) {
     if (process.env.NODE_ENV === 'production') {
       throw new Error(
-        'BACKEND_URL não configurado. Defina BACKEND_URL com a origem do backend (ex.: https://api.seudominio.com) ou NEXT_PUBLIC_API_URL com a URL completa da API (ex.: https://api.seudominio.com/api) e faça um redeploy.'
+        'BACKEND_URL não configurado. Configure MERCADO_PAGO_ACCESS_TOKEN e MERCADO_PAGO_PUBLIC_KEY no painel da Vercel para usar processamento LOCAL de pagamentos, ou defina BACKEND_URL para usar backend externo.'
       );
     }
     return 'http://127.0.0.1:3001';
