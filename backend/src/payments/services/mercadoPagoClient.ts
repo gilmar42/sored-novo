@@ -62,18 +62,22 @@ class MercadoPagoClient {
       throw new Error('Mercado Pago não configurado');
     }
 
-    // Configuração de meios de pagamento
+    // Configuração de meios de pagamento - PAGAMENTO ÚNICO SEM PARCELAS
     const paymentMethods: any = {
       excluded_payment_methods: [],
-      excluded_payment_types: [{ id: 'atm' }],
-      installments: 12
+      excluded_payment_types: [
+        { id: 'atm' },
+        { id: 'consumer_credits' } // Exclui parcelas/credito do consumidor
+      ],
+      installments: 1, // Apenas pagamento único (1x)
+      default_installments: 1
     };
 
     if (orderData.paymentMethod === 'pix') {
       paymentMethods.default_payment_method_id = 'pix';
     }
 
-    // Para cartão de crédito, não especificar default_installments para evitar problemas no Checkout Pro
+    // Para cartão de crédito, forçar pagamento único sem saved_card
 
     const preferenceData: any = {
       purpose: 'WALLET_PURCHASE',

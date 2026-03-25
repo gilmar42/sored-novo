@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/UI';
-import { CreditCard, QrCode, AlertCircle, Loader2 } from 'lucide-react';
+import { CreditCard, QrCode, AlertCircle, Loader2, Check } from 'lucide-react';
 import paymentApi, { getPaymentApiConfigurationError } from '@/lib/paymentApi';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
 
@@ -408,6 +408,22 @@ export default function PaymentProcessor({
           </p>
         </div>
 
+        {/* Alertas - Pagamento Único e Sem Cupons */}
+        <div className="space-y-3 mb-6">
+          <div className="bg-green-500/10 border border-green-500/30 p-3 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-semibold text-green-400">PAGAMENTO ÚNICO (À VISTA)</span>
+            </div>
+          </div>
+          <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-400" />
+              <span className="text-sm font-semibold text-red-400">SEM CUPONS DE DESCONTO</span>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-4">
           <div className="bg-slate-800 p-4 rounded-lg">
             <h4 className="font-semibold mb-3">Resumo do Pagamento</h4>
@@ -423,6 +439,10 @@ export default function PaymentProcessor({
               <div className="flex justify-between">
                 <span>Período:</span>
                 <span className="font-semibold">{plan.period}</span>
+              </div>
+              <div className="flex justify-between text-green-400 font-semibold mt-2 pt-2 border-t border-slate-600">
+                <span>Tipo:</span>
+                <span>Pagamento Único</span>
               </div>
             </div>
           </div>
