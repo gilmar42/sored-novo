@@ -11,21 +11,25 @@ const ensureHasScheme = (value: string) => {
 const hasPlaceholderValue = (value: string) => /x{8,}/i.test(value) || value.includes('your_');
 
 const hasUsableLocalCredentials = () => {
-  const accessToken = (process.env.MERCADO_PAGO_ACCESS_TOKEN || '').trim();
-  const publicKey =
-    (process.env.MERCADO_PAGO_PUBLIC_KEY ||
-      process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ||
-      '').trim();
+  const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+  const publicKey = process.env.MERCADO_PAGO_PUBLIC_KEY || process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY;
 
-  if (!accessToken) {
-    console.warn('[Local Mercado Pago] MERCADO_PAGO_ACCESS_TOKEN não configurado');
+  console.log('[Local Mercado Pago] ACCESS_TOKEN existe:', !!accessToken, 'length:', accessToken?.length || 0);
+  console.log('[Local Mercado Pago] PUBLIC_KEY existe:', !!publicKey, 'length:', publicKey?.length || 0);
+  console.log('[Local Mercado Pago] TOKEN starts with APP_USR:', accessToken?.startsWith('APP_USR-'));
+
+  const trimmedAccessToken = (accessToken || '').trim();
+  const trimmedPublicKey = (publicKey || '').trim();
+
+  if (!trimmedAccessToken) {
+    console.warn('[Local Mercado Pago] MERCADO_PAGO_ACCESS_TOKEN não configurado ou vazio');
     return false;
   }
-  if (!publicKey) {
-    console.warn('[Local Mercado Pago] MERCADO_PAGO_PUBLIC_KEY não configurado');
+  if (!trimmedPublicKey) {
+    console.warn('[Local Mercado Pago] MERCADO_PAGO_PUBLIC_KEY não configurado ou vazio');
     return false;
   }
-  if (hasPlaceholderValue(accessToken) || hasPlaceholderValue(publicKey)) {
+  if (hasPlaceholderValue(trimmedAccessToken) || hasPlaceholderValue(trimmedPublicKey)) {
     console.warn('[Local Mercado Pago] Credentials com valores de placeholder');
     return false;
   }
