@@ -6,21 +6,32 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    console.log('[Checkout] Processando pagamento...');
+
     if (canHandlePaymentsLocally()) {
       try {
         const result = await createLocalCheckout(body);
+        console.log('[Checkout] Pagamento processado localmente com sucesso');
         return NextResponse.json(result, { status: 200 });
       } catch (error: any) {
-        console.warn('[Checkout Proxy] Falha no processamento local, usando backend configurado:', error?.message || error);
+        console.warn('[Checkout] Falha no processamento local:', error?.message || error);
       }
+    } else {
+      console.log('[Checkout] Processamento local não disponível, tentando backend...');
     }
 
     let backendUrl: string;
     try {
       backendUrl = resolveBackendUrl();
+      console.log('[Checkout] Backend URL:', backendUrl);
     } catch (error: any) {
+      console.error('[Checkout] Backend não configurado:', error?.message);
       return NextResponse.json(
-        { error: 'Backend não configurado', message: error?.message || String(error) },
+        { 
+          error: 'Configuração de pagamento incompleta', 
+          message: 'Verifique as variáveis de ambiente: MERCADO_PAGO_ACCESS_TOKEN e MERCADO_PAGO_PUBLIC_KEY para processamento local, ou BACKEND_URL para usar backend externo.',
+          hint: process.env.NODE_ENV === 'production' ? 'Configure as variáveis no painel da Vercel' : 'Execute com variáveis de ambiente definidas'
+        },
         { status: 503 }
       );
     }

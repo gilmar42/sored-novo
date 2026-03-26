@@ -17,14 +17,29 @@ const hasUsableLocalCredentials = () => {
       process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY ||
       '').trim();
 
-  if (!accessToken || !publicKey) return false;
-  if (hasPlaceholderValue(accessToken) || hasPlaceholderValue(publicKey)) return false;
+  if (!accessToken) {
+    console.warn('[Local Mercado Pago] MERCADO_PAGO_ACCESS_TOKEN não configurado');
+    return false;
+  }
+  if (!publicKey) {
+    console.warn('[Local Mercado Pago] MERCADO_PAGO_PUBLIC_KEY não configurado');
+    return false;
+  }
+  if (hasPlaceholderValue(accessToken) || hasPlaceholderValue(publicKey)) {
+    console.warn('[Local Mercado Pago] Credentials com valores de placeholder');
+    return false;
+  }
 
   return true;
 };
 
-export const canHandlePaymentsLocally = () =>
-  hasUsableLocalCredentials() && mercadoPagoClient.isConfigured();
+export const canHandlePaymentsLocally = () => {
+  const usable = hasUsableLocalCredentials() && mercadoPagoClient.isConfigured();
+  if (!usable) {
+    console.log('[Local Mercado Pago] Processamento local indisponível');
+  }
+  return usable;
+};
 
 export const getMercadoPagoPublicKey = () => mercadoPagoClient.getPublicKey();
 
