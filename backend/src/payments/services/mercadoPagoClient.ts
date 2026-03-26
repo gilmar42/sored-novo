@@ -81,6 +81,7 @@ class MercadoPagoClient {
 
     const preferenceData: any = {
       purpose: 'WALLET_PURCHASE',
+      marketplace: 'NONE',
       additional_info: {
         items: [{
           id: orderData.orderId,
@@ -89,7 +90,11 @@ class MercadoPagoClient {
           quantity: 1,
           unit_price: orderData.amount,
           currency_id: 'BRL'
-        }]
+        }],
+        payer: orderData.payer ? {
+          first_name: orderData.payer.firstName,
+          last_name: orderData.payer.lastName
+        } : undefined
       },
       items: [{
         title: orderData.description,
