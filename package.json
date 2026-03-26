@@ -7,7 +7,7 @@
     "build": "next build",
     "build:backend": "npm --prefix backend run build",
     "build:hostinger": "npm run build && npm run build:backend",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "start:backend": "npm --prefix backend start",
     "hostinger:install": "npm ci && npm --prefix backend ci",
     "hostinger:start": "pm2 start ecosystem.config.cjs --update-env",
@@ -25,7 +25,7 @@
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=18.0.0",
     "npm": ">=10.0.0"
   },
   "dependencies": {
