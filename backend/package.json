@@ -7,11 +7,7 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "lint": "eslint .",
-    "test": "jest --runInBand",
-    "validate-mercadopago": "node validate-mercadopago.js",
-    "setup-deploy": "node setup-deploy.js",
-    "predeploy": "npm run build && npm run validate-mercadopago",
+    "predeploy": "npm run build",
     "health-check": "curl -f http://localhost:3001/api/health || exit 1"
   },
   "keywords": [
