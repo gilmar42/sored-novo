@@ -82,6 +82,8 @@ class MercadoPagoClient {
     const preferenceData: any = {
       purpose: 'WALLET_PURCHASE',
       marketplace: 'NONE',
+      show_instments: false,
+      show_payer_info: false,
       additional_info: {
         items: [{
           id: orderData.orderId,
