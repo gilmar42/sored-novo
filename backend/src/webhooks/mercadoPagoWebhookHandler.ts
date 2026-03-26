@@ -105,9 +105,16 @@ export const handleMercadoPagoWebhook = async (req: Request, res: Response) => {
 
     // Processar webhook de forma assíncrona
     setImmediate(() => {
-      paymentService.processWebhook(eventData).catch((error) => {
-        logger.error('Erro ao processar webhook', { error: error.message });
-      });
+      // Verificar se é um evento de PreApproval (assinatura com trial)
+      if (eventData.type === 'pre_approval') {
+        paymentService.processPreApprovalWebhook(eventData).catch((error) => {
+          logger.error('Erro ao processar webhook de PreApproval', { error: error.message });
+        });
+      } else {
+        paymentService.processWebhook(eventData).catch((error) => {
+          logger.error('Erro ao processar webhook', { error: error.message });
+        });
+      }
     });
 
     res.status(200).json({ received: true });

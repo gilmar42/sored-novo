@@ -121,20 +121,24 @@ model Budget {
 }
 
 model Subscription {
-  id                   String    @id @default(uuid())
-  tenantId             String
-  tenant               Tenant    @relation(fields: [tenantId], references: [id])
-  plan                 String
-  status               String
-  startDate            DateTime  @default(now())
-  endDate              DateTime
-  nextBillingDate      DateTime?
-  mercadoPagoPaymentId String?
-  amount               Float?
-  paymentMethod        String?
-  features             Json?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                      String    @id @default(uuid())
+  tenantId                String
+  tenant                  Tenant    @relation(fields: [tenantId], references: [id])
+  plan                    String
+  status                  String
+  startDate               DateTime  @default(now())
+  endDate                 DateTime
+  nextBillingDate         DateTime?
+  mercadoPagoPaymentId    String?
+  mercadoPagoPreApprovalId String?
+  amount                  Float?
+  paymentMethod           String?
+  features                Json?
+  isTrial                 Boolean   @default(false)
+  trialEndDate            DateTime?
+  trialCharged            Boolean   @default(false)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 }
 
 model Payment {

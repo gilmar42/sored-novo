@@ -201,6 +201,57 @@ class PaymentService {
     logger.info('Webhook processado', { paymentId: payment.id, status: newStatus });
   }
 
+  async processPreApprovalWebhook(eventData: any) {
+    const { type, data } = eventData || {};
+    
+    if (type !== 'pre_approval' || !data?.id) {
+      return;
+    }
+
+    const preApprovalId = data.id.toString();
+    logger.info('Webhook de PreApproval recebido', { preApprovalId, eventType: eventData.action });
+
+    const subscription = await prisma.subscription.findFirst({
+      where: { mercadoPagoPreApprovalId: preApprovalId },
+      include: { tenant: true },
+    });
+
+    if (!subscription) {
+      logger.warn('PreApproval não encontrado no sistema', { preApprovalId });
+      return;
+    }
+
+    // Atualizar status da assinatura baseado no evento
+    if (eventData.action === 'pre_approval.authorized' || eventData.action === 'pre_approval.payment_created') {
+      // Assinatura foi autorizada ou pagamento feito após o trial
+      await prisma.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          status: 'active',
+          trialCharged: true,
+        },
+      });
+
+      logger.info('Assinatura ativada após trial', {
+        subscriptionId: subscription.id,
+        tenantId: subscription.tenantId,
+        plan: subscription.plan,
+      });
+    } else if (eventData.action === 'pre_approval.expired' || eventData.action === 'pre_approval.cancelled') {
+      await prisma.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          status: 'cancelled',
+        },
+      });
+
+      logger.info('Assinatura cancelada/expirada', {
+        subscriptionId: subscription.id,
+        action: eventData.action,
+      });
+    }
+  }
+
   async refundPayment(paymentId: string) {
     const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
     if (!payment) {
