@@ -60,7 +60,28 @@ class MercadoPagoClient {
       throw new Error('Mercado Pago não configurado');
     }
 
+    const paymentMethods: any = {
+      excluded_payment_methods: [],
+      excluded_payment_types: [
+        { id: 'atm' },
+        { id: 'consumer_credits' }
+      ],
+      installments: 1,
+      default_installments: 1
+    };
+
     const preferenceData: any = {
+      purpose: 'WALLET_PURCHASE',
+      additional_info: {
+        items: [{
+          id: orderData.orderId,
+          title: orderData.description,
+          description: orderData.description,
+          quantity: 1,
+          unit_price: orderData.amount,
+          currency_id: 'BRL'
+        }]
+      },
       items: [{
         title: orderData.description,
         quantity: 1,
@@ -77,26 +98,16 @@ class MercadoPagoClient {
         ? 'https://example.com/webhook-dummy' 
         : orderData.notificationUrl,
       external_reference: orderData.orderId,
-      payment_methods: {
-        excluded_payment_methods: [],
-        excluded_payment_types: [{ id: 'atm' }]
-      },
+      payment_methods: paymentMethods,
       payer: orderData.payer ? {
         email: orderData.payer.email,
         name: orderData.payer.firstName,
-        surname: orderData.payer.lastName,
-        phone: orderData.payer.phone ? {
-          number: orderData.payer.phone
-        } : undefined
+        surname: orderData.payer.lastName
       } : undefined
     };
 
     if (orderData.paymentMethod === 'pix') {
-      preferenceData.payment_methods = {
-        default_payment_method_id: 'pix',
-        excluded_payment_methods: [],
-        excluded_payment_types: []
-      };
+      preferenceData.payment_methods.default_payment_method_id = 'pix';
     }
 
     try {
